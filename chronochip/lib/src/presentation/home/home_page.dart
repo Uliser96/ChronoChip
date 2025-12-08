@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chronochip/src/shared/theme/app_colors.dart';
+import 'package:chronochip/src/presentation/profile/profile_page.dart';
+import 'package:chronochip/src/presentation/available_events/available_events_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -34,13 +36,13 @@ class _HomePageState extends State<HomePage> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Image.asset(
-                  'assets/imgs/clock_background.png',
+                Container(
                   width: 180,
                   height: 180,
-                  fit: BoxFit.contain,
-                  color: outerColor,
-                  colorBlendMode: BlendMode.srcATop,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: outerColor,
+                  ),
                 ),
                 Container(
                   width: 120,
@@ -50,12 +52,13 @@ class _HomePageState extends State<HomePage> {
                     shape: BoxShape.circle,
                   ),
                   child: ClipOval(
-                    child: Image.asset(
-                      imageAsset,
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.center,
+                    child: Container(
+                      color: Colors.grey.shade300,
+                      child: Icon(
+                        Icons.image,
+                        color: Colors.grey.shade600,
+                        size: 50,
+                      ),
                     ),
                   ),
                 ),
@@ -110,7 +113,15 @@ class _HomePageState extends State<HomePage> {
                           outerColor: AppColors.primary,
                           imageAsset: 'assets/imgs/registrations.png',
                           label: 'Inscripciones',
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const AvailableEventsPage(),
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 40),
                         _buildCircleButton(
@@ -139,19 +150,14 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex,
         children: [
           _buildHomeContent(),
-          // Placeholder pages: replace with real screens or routes as needed
+          // Cronochip page: replace with real screen as needed
           Center(
             child: Text(
               'Cronochip',
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
-          Center(
-            child: Text(
-              'Perfil',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ),
+          const ProfilePage(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
