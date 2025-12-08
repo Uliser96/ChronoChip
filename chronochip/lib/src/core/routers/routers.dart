@@ -3,6 +3,7 @@ import 'package:chronochip/src/presentation/login/login_page.dart';
 import 'package:chronochip/src/presentation/reset_password/reset_password.dart';
 import 'package:chronochip/src/presentation/welcome/welcome.dart';
 import 'package:chronochip/src/presentation/register/register.dart';
+import 'package:chronochip/src/presentation/home/home_page.dart';
 
 /// Centralized app routes.
 class Routers {
@@ -12,11 +13,13 @@ class Routers {
   static const String login = '/login';
   static const String resetPassword = '/reset-password';
   static const String register = '/register';
+  static const String home = '/home';
 
   static Map<String, WidgetBuilder> get routes => {
     welcome: (context) => const WelcomePage(),
     login: (context) => const LoginPage(),
     resetPassword: (context) => const ResetPasswordPage(),
     register: (context) => const RegisterPage(),
+    home: (context) => const HomePage(),
   };
 }

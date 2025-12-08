@@ -104,7 +104,12 @@ class LoginPage extends StatelessWidget {
 
                             // Iniciar sesión button
                             ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  Routers.home,
+                                );
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 foregroundColor: AppColors.primary,

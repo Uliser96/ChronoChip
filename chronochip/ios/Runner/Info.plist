@@ -45,5 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- Local network privacy (iOS 14+). Add a human-readable description explaining why the app
+	     needs to access the local network. If your app uses Bonjour/mDNS services, list them
+	     in NSBonjourServices. An empty array is acceptable if you don't need to declare specific
+	     service types. -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>La aplicación necesita acceso a la red local para descubrir dispositivos cercanos y comunicarse con ellos.</string>
+	<key>NSBonjourServices</key>
+	<array/>
 </dict>
 </plist>
