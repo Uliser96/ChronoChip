@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chronochip/src/shared/theme/app_colors.dart';
 import 'package:chronochip/src/core/routers/routers.dart';
+import 'package:chronochip/src/core/utils/validation_util.dart';
 import 'bloc/login_bloc.dart';
 
 class LoginPage extends StatefulWidget {
@@ -14,12 +15,52 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
+  String? _emailError;
+  String? _passwordError;
 
   @override
   void initState() {
     super.initState();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
+
+    // Validar en tiempo real
+    _emailController.addListener(_validateEmail);
+    _passwordController.addListener(_validatePassword);
+  }
+
+  void _validateEmail() {
+    setState(() {
+      final error = ValidationUtil.getEmailError(_emailController.text);
+      _emailError = error.isEmpty ? null : error;
+    });
+  }
+
+  void _validatePassword() {
+    setState(() {
+      final error = ValidationUtil.getPasswordError(_passwordController.text);
+      _passwordError = error.isEmpty ? null : error;
+    });
+  }
+
+  bool _isFormValid() {
+    return ValidationUtil.isValidEmail(_emailController.text) &&
+        ValidationUtil.isValidPassword(_passwordController.text);
+  }
+
+  void _handleLogin() {
+    if (!_isFormValid()) {
+      _validateEmail();
+      _validatePassword();
+      return;
+    }
+
+    context.read<LoginBloc>().add(
+      LoginSubmitted(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      ),
+    );
   }
 
   @override
@@ -100,6 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                               // Email field
                               TextField(
                                 controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
                                 decoration: InputDecoration(
                                   hintText: 'Correo electrónico',
                                   filled: true,
@@ -114,6 +156,11 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                   hintStyle: const TextStyle(
                                     color: Colors.white70,
+                                  ),
+                                  errorText: _emailError,
+                                  errorStyle: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
                                   ),
                                 ),
                                 style: const TextStyle(color: Colors.white),
@@ -139,6 +186,11 @@ class _LoginPageState extends State<LoginPage> {
                                   hintStyle: const TextStyle(
                                     color: Colors.white70,
                                   ),
+                                  errorText: _passwordError,
+                                  errorStyle: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
                                 ),
                                 style: const TextStyle(color: Colors.white),
                               ),
@@ -147,18 +199,13 @@ class _LoginPageState extends State<LoginPage> {
                               // Login button
                               BlocBuilder<LoginBloc, LoginState>(
                                 builder: (context, state) {
+                                  final isButtonEnabled =
+                                      _isFormValid() && state is! LoginLoading;
+
                                   return ElevatedButton(
-                                    onPressed: state is LoginLoading
-                                        ? null
-                                        : () {
-                                            context.read<LoginBloc>().add(
-                                              LoginSubmitted(
-                                                email: _emailController.text,
-                                                password:
-                                                    _passwordController.text,
-                                              ),
-                                            );
-                                          },
+                                    onPressed: isButtonEnabled
+                                        ? _handleLogin
+                                        : null,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       foregroundColor: AppColors.primary,
@@ -168,6 +215,8 @@ class _LoginPageState extends State<LoginPage> {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
+                                      disabledBackgroundColor: Colors.white
+                                          .withOpacity(0.5),
                                     ),
                                     child: state is LoginLoading
                                         ? const SizedBox(
