@@ -1,4 +1,5 @@
 import 'package:chronochip/src/core/models/login_response.dart';
+import 'package:chronochip/src/core/models/gender_response.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 
@@ -24,6 +25,17 @@ class ApiService {
       // (e.g., Blocs) can handle status codes specifically.
       if (e is ApiException) rethrow;
       throw Exception('Error en login: $e');
+    }
+  }
+
+  /// Obtiene la lista de géneros disponibles
+  Future<GenderResponse> getGenders() async {
+    try {
+      final response = await _apiClient.get('api/genders');
+      return GenderResponse.fromJson(response);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al obtener géneros: $e');
     }
   }
 }
