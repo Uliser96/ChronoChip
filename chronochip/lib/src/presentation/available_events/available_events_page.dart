@@ -1,8 +1,82 @@
 import 'package:flutter/material.dart';
 import 'package:chronochip/src/shared/theme/app_colors.dart';
+import 'package:chronochip/src/core/services/api/api_client.dart';
+import 'package:chronochip/src/core/services/api/api_exception.dart';
 
-class AvailableEventsPage extends StatelessWidget {
+class AvailableEventsPage extends StatefulWidget {
   const AvailableEventsPage({super.key});
+
+  @override
+  State<AvailableEventsPage> createState() => _AvailableEventsPageState();
+}
+
+class _AvailableEventsPageState extends State<AvailableEventsPage> {
+  final TextEditingController _searchController = TextEditingController();
+  final List<_Event> _events = [];
+  List<_Event> _filtered = [];
+  bool _loading = false;
+  String? _error;
+
+  // Uses ApiClient.baseUrl defined in ApiClient
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_onSearchChanged);
+    _fetchEvents();
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final q = _searchController.text.toLowerCase();
+    setState(() {
+      if (q.isEmpty) {
+        _filtered = List.from(_events);
+      } else {
+        _filtered = _events.where((e) {
+          return e.name.toLowerCase().contains(q) ||
+              e.location.toLowerCase().contains(q);
+        }).toList();
+      }
+    });
+  }
+
+  Future<void> _fetchEvents() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final api = ApiClient();
+      final body = await api.get('api/events');
+      final rows = body?['data']?['rows'] as List<dynamic>? ?? [];
+      _events.clear();
+      for (final item in rows) {
+        _events.add(_Event.fromJson(item as Map<String, dynamic>));
+      }
+      setState(() {
+        _filtered = List.from(_events);
+      });
+    } on ApiException catch (e) {
+      setState(() {
+        _error = e.message;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Error: $e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,13 +84,10 @@ class AvailableEventsPage extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background
           Image.asset('assets/imgs/main_background.png', fit: BoxFit.cover),
-          // Content
           SafeArea(
             child: Column(
               children: [
-                // Header
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -42,8 +113,8 @@ class AvailableEventsPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      // Search bar
                       TextField(
+                        controller: _searchController,
                         decoration: InputDecoration(
                           hintText: 'Buscar',
                           prefixIcon: const Icon(Icons.search),
@@ -62,48 +133,10 @@ class AvailableEventsPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Events list
                 Expanded(
-                  child: ListView(
+                  child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    children: [
-                      _buildEventCard(
-                        title: 'Love Run',
-                        date: '16 / 02 / 25',
-                        location: 'Cuernavaca, Mor.',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildEventCard(
-                        title: '5K Hollywood Challenge',
-                        date: '18 / 02 / 25',
-                        location: 'Puebla, Pue.',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildEventCard(
-                        title: 'Monarca Trail',
-                        date: '09 / 03 / 25',
-                        location: 'Angangueo, Mich.',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildEventCard(
-                        title: 'Entre Cerros 2025',
-                        date: '16 / 03 / 25',
-                        location: 'Peña de Bernal, Qro.',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildEventCard(
-                        title: 'Transnavajas',
-                        date: '21 / 09 / 25',
-                        location: 'Mineral del Monte, Hgo.',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildEventCard(
-                        title: 'Reto Vulcano',
-                        date: '11 / 10 / 25',
-                        location: 'Atzintzán, Pue.',
-                      ),
-                      const SizedBox(height: 24),
-                    ],
+                    child: _buildBody(),
                   ),
                 ),
               ],
@@ -111,6 +144,30 @@ class AvailableEventsPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return Center(child: Text(_error!));
+    }
+    if (_filtered.isEmpty) {
+      return const Center(child: Text('No hay eventos disponibles'));
+    }
+    return ListView.separated(
+      itemCount: _filtered.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final e = _filtered[index];
+        return _buildEventCard(
+          title: e.name,
+          date: e.date,
+          location: e.location,
+        );
+      },
     );
   }
 
@@ -136,7 +193,6 @@ class AvailableEventsPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            // Image placeholder
             Container(
               width: 80,
               height: 80,
@@ -147,7 +203,6 @@ class AvailableEventsPage extends StatelessWidget {
               child: Icon(Icons.image, color: Colors.grey.shade600, size: 40),
             ),
             const SizedBox(width: 16),
-            // Event info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,6 +263,31 @@ class AvailableEventsPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _Event {
+  final String name;
+  final String date;
+  final String location;
+  final int id;
+
+  _Event({
+    required this.name,
+    required this.date,
+    required this.location,
+    required this.id,
+  });
+
+  factory _Event.fromJson(Map<String, dynamic> json) {
+    return _Event(
+      name: json['name'] as String? ?? '',
+      date: json['date'] as String? ?? '',
+      location: json['location'] as String? ?? '',
+      id: (json['id'] is int)
+          ? json['id'] as int
+          : int.tryParse('${json['id']}') ?? 0,
     );
   }
 }
