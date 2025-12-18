@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:chronochip/src/core/services/api/api_service.dart';
 import 'package:chronochip/src/core/services/api/api_exception.dart';
+import 'package:chronochip/src/core/services/token_storage.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
@@ -30,6 +31,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
       // Consider success when we have data with a non-empty accessToken
       if (response.data != null && response.data!.accessToken.isNotEmpty) {
+        // Guardar tokens de forma segura
+        await TokenStorage.saveTokens(
+          accessToken: response.data!.accessToken,
+          refreshToken: response.data!.refreshToken,
+        );
+
         emit(const LoginSuccess());
       } else {
         emit(
