@@ -1,10 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:chronochip/src/core/utils/logger_util.dart';
+import 'package:chronochip/src/core/services/api/api_exception.dart';
 
 class ApiClient {
-  static const String baseUrl =
-      'https://42240a32-872b-4780-a82b-11965d804431.mock.pstmn.io/';
+  static const String baseUrl = 'https://api.crono.stackcloud.com.mx/';
 
   final http.Client _httpClient;
 
@@ -31,7 +31,10 @@ class ApiClient {
         error: e,
         stackTrace: stackTrace,
       );
-      throw Exception('Error en solicitud GET: $e');
+      // If the error is already an ApiException, rethrow it to preserve
+      // statusCode and original message. Otherwise, wrap it.
+      if (e is ApiException) rethrow;
+      throw ApiException(e.toString());
     }
   }
 
@@ -56,7 +59,8 @@ class ApiClient {
         error: e,
         stackTrace: stackTrace,
       );
-      throw Exception('Error en solicitud POST: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException(e.toString());
     }
   }
 
@@ -81,7 +85,8 @@ class ApiClient {
         error: e,
         stackTrace: stackTrace,
       );
-      throw Exception('Error en solicitud PUT: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException(e.toString());
     }
   }
 
@@ -105,7 +110,8 @@ class ApiClient {
         error: e,
         stackTrace: stackTrace,
       );
-      throw Exception('Error en solicitud DELETE: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException(e.toString());
     }
   }
 
@@ -123,12 +129,20 @@ class ApiClient {
       }
       return jsonDecode(response.body);
     } else {
+      final body = response.body;
+      final message = body.isNotEmpty
+          ? body
+          : (response.reasonPhrase ?? 'HTTP error');
+
       LoggerUtil.logError(
         method: method,
         url: url,
-        error: 'HTTP ${response.statusCode}: ${response.reasonPhrase}',
+        error: 'HTTP ${response.statusCode}: $message',
       );
-      throw Exception('Error ${response.statusCode}: ${response.reasonPhrase}');
+
+      // Lanzar ApiException con código y mensaje para que la capa superior
+      // (Bloc/servicio) pueda manejarlo de forma específica.
+      throw ApiException(message, statusCode: response.statusCode);
     }
   }
 }
