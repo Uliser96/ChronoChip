@@ -2,6 +2,7 @@ import 'package:chronochip/src/core/models/login_response.dart';
 import 'package:chronochip/src/core/models/gender_response.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
+import '../../models/register_response.dart';
 
 class ApiService {
   final ApiClient _apiClient;
@@ -36,6 +37,53 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw Exception('Error al obtener géneros: $e');
+    }
+  }
+
+  /// Registra un nuevo usuario
+  Future<RegisterResponse> register({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String birthdate,
+    required int genderId,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        'api/public/register',
+        body: {
+          'email': email,
+          'password': password,
+          'firstName': firstName,
+          'lastName': lastName,
+          'birthdate': birthdate,
+          'genderId': genderId,
+        },
+      );
+
+      return RegisterResponse.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error en register: $e');
+    }
+  }
+
+  /// Verifica el email con el código proporcionado
+  Future<Map<String, dynamic>> verifyEmail({
+    required String email,
+    required String code,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        'api/public/verify-email',
+        body: {'email': email, 'code': code},
+      );
+
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error en verifyEmail: $e');
     }
   }
 }
