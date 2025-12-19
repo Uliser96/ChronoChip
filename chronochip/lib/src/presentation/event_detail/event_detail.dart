@@ -71,15 +71,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            icon: const Icon(Icons.arrow_back),
-                            color: Colors.black,
-                          ),
-                        ],
-                      ),
                       const SizedBox(height: 8),
                       if (_loading) ...[
                         const SizedBox(height: 24),
@@ -122,17 +113,19 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     ],
                   ),
                 ),
-                const Spacer(),
                 if (_event != null) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Image.asset(
-                      'assets/imgs/logo.png',
-                      height: 80,
-                      fit: BoxFit.contain,
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Image.asset(
+                          'assets/imgs/logo.png',
+                          height: 80,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 22),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -143,10 +136,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         _LargePillButton(
                           width: width,
                           label: 'Inscripciones',
-                          sublabel: _event!.registrationStatusLabel,
-                          backgroundColor: AppColors.primary,
+                          sublabel: _event!.finished ? 'Cerradas' : 'Abiertas',
+                          backgroundColor: _event!.finished
+                              ? Colors.grey.shade800
+                              : AppColors.primary,
                           textColor: Colors.white,
-                          onPressed: () {},
+                          onPressed: _event!.finished ? null : () {},
                         ),
                         const SizedBox(height: 12),
                         _LargePillButton(
@@ -161,6 +156,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       ],
                     ),
                   ),
+                ] else ...[
+                  const Spacer(),
                 ],
               ],
             ),
@@ -177,6 +174,7 @@ class _EventDetail {
   final String location;
   final String registrationStartDate;
   final String registrationEndDate;
+  final bool finished;
 
   _EventDetail({
     required this.name,
@@ -184,6 +182,7 @@ class _EventDetail {
     required this.location,
     required this.registrationStartDate,
     required this.registrationEndDate,
+    required this.finished,
   });
 
   factory _EventDetail.fromJson(Map<String, dynamic> json) {
@@ -193,6 +192,7 @@ class _EventDetail {
       location: json['location'] as String? ?? '',
       registrationStartDate: json['registrationStartDate'] as String? ?? '',
       registrationEndDate: json['registrationEndDate'] as String? ?? '',
+      finished: json['finished'] as bool? ?? false,
     );
   }
 
@@ -206,8 +206,13 @@ class _EventDetail {
 class _SmallOutlinedButton extends StatelessWidget {
   final String label;
   final IconData icon;
+  final String? subtitle;
 
-  const _SmallOutlinedButton({required this.label, required this.icon});
+  const _SmallOutlinedButton({
+    required this.label,
+    required this.icon,
+    this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -237,12 +242,28 @@ class _SmallOutlinedButton extends StatelessWidget {
               child: Icon(icon, color: AppColors.primary, size: 18),
             ),
             const SizedBox(width: 12),
-            Text(
-              label,
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (subtitle != null && subtitle!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ],
         ),
@@ -257,7 +278,7 @@ class _LargePillButton extends StatelessWidget {
   final String sublabel;
   final Color backgroundColor;
   final Color textColor;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const _LargePillButton({
     required this.width,
@@ -265,7 +286,7 @@ class _LargePillButton extends StatelessWidget {
     required this.sublabel,
     required this.backgroundColor,
     required this.textColor,
-    required this.onPressed,
+    this.onPressed,
   });
 
   @override
