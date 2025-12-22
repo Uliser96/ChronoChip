@@ -18,6 +18,15 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
   final TextEditingController _searchController = TextEditingController();
   List<AvailableEvent> _filtered = [];
   late final AvailableEventsBloc _bloc;
+  final TextStyle _eventInfoStyle = TextStyle(
+    fontSize: 12,
+    color: Colors.grey.shade600,
+  );
+
+  List<AvailableEvent> _sourceEvents() {
+    final state = _bloc.state;
+    return state is AvailableEventsSuccess ? state.events : <AvailableEvent>[];
+  }
 
   // Uses ApiClient.baseUrl defined in ApiClient
 
@@ -40,9 +49,7 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
   void _onSearchChanged() {
     final q = _searchController.text.toLowerCase();
     final state = _bloc.state;
-    final source = state is AvailableEventsSuccess
-        ? state.events
-        : <AvailableEvent>[];
+    final source = _sourceEvents();
     setState(() {
       if (q.isEmpty) {
         _filtered = List.from(source);
@@ -55,9 +62,31 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
     });
   }
 
-  Future<void> _fetchEvents() async {
-    // delegate loading to the bloc
-    _bloc.add(const AvailableEventsFetch());
+  Widget _iconTextRow(IconData icon, String text, {bool expanded = false}) {
+    final textWidget = Text(
+      text,
+      style: _eventInfoStyle,
+      maxLines: expanded ? 1 : null,
+      overflow: expanded ? TextOverflow.ellipsis : TextOverflow.visible,
+    );
+
+    if (expanded) {
+      return Row(
+        children: [
+          Icon(icon, size: 14, color: Colors.grey.shade600),
+          const SizedBox(width: 4),
+          Expanded(child: textWidget),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: Colors.grey.shade600),
+        const SizedBox(width: 4),
+        textWidget,
+      ],
+    );
   }
 
   @override
@@ -222,45 +251,9 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          date,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
+                    _iconTextRow(Icons.calendar_today, date),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on,
-                          size: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            location,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
+                    _iconTextRow(Icons.location_on, location, expanded: true),
                   ],
                 ),
               ),
