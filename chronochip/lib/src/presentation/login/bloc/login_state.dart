@@ -27,3 +27,14 @@ class LoginFailure extends LoginState {
   @override
   List<Object> get props => [error];
 }
+
+class LoginEmailNotVerified extends LoginState {
+  final String message;
+
+  const LoginEmailNotVerified({
+    this.message = 'Correo electronico no verificado, por favor verifiquelo',
+  });
+
+  @override
+  List<Object> get props => [message];
+}

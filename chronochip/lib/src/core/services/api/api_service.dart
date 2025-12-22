@@ -86,4 +86,21 @@ class ApiService {
       throw Exception('Error en verifyEmail: $e');
     }
   }
+
+  /// Solicita el envío del código de verificación al email proporcionado
+  Future<Map<String, dynamic>> requestVerificationCode({
+    required String email,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        'api/public/resend-verification-code',
+        body: {'email': email},
+      );
+
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error en requestVerificationCode: $e');
+    }
+  }
 }

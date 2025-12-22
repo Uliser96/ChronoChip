@@ -51,6 +51,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       if (e is ApiException && e.statusCode == 401) {
         // Mostrar mensaje amigable sin exponer detalles del servicio
         emit(LoginFailure(error: 'Credenciales invalidas'));
+      } else if (e is ApiException && e.statusCode == 403) {
+        // Email no verificado
+        emit(const LoginEmailNotVerified());
       } else if (e is ApiException) {
         emit(LoginFailure(error: e.message));
       } else {

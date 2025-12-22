@@ -4,6 +4,9 @@ import 'package:chronochip/src/shared/theme/app_colors.dart';
 import 'package:chronochip/src/core/routers/routers.dart';
 import 'package:chronochip/src/core/utils/validation_util.dart';
 import 'bloc/login_bloc.dart';
+import 'package:chronochip/src/core/services/api/api_service.dart';
+import 'package:chronochip/src/core/services/api/api_exception.dart';
+import 'package:chronochip/src/presentation/code_validation/code_validation_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -97,6 +100,73 @@ class _LoginPageState extends State<LoginPage> {
                             Navigator.of(context).pushNamedAndRemoveUntil(
                               Routers.home,
                               (route) => false,
+                            );
+                          } else if (state is LoginEmailNotVerified) {
+                            // Use parent context for navigation / SnackBars to avoid accessing
+                            // a deactivated context after dialog is closed.
+                            final parentContext = context;
+                            showDialog<void>(
+                              context: parentContext,
+                              builder: (dialogContext) {
+                                return AlertDialog(
+                                  content: const Text(
+                                    'Correo electronico no verificado, por favor verifiquelo',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(dialogContext).pop(),
+                                      child: const Text('Cancelar'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        Navigator.of(dialogContext).pop();
+                                        final email = _emailController.text
+                                            .trim();
+                                        try {
+                                          final api = ApiService();
+                                          await api.requestVerificationCode(
+                                            email: email,
+                                          );
+                                          Future.microtask(() {
+                                            Navigator.of(parentContext).push(
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    CodeValidationPage(
+                                                      email: email,
+                                                    ),
+                                              ),
+                                            );
+                                          });
+                                        } catch (e) {
+                                          Future.microtask(() {
+                                            if (e is ApiException) {
+                                              ScaffoldMessenger.of(
+                                                parentContext,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(e.message),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            } else {
+                                              ScaffoldMessenger.of(
+                                                parentContext,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(e.toString()),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            }
+                                          });
+                                        }
+                                      },
+                                      child: const Text('De acuerdo'),
+                                    ),
+                                  ],
+                                );
+                              },
                             );
                           } else if (state is LoginFailure) {
                             ScaffoldMessenger.of(context).showSnackBar(
