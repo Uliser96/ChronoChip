@@ -17,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   late TextEditingController _passwordController;
   String? _emailError;
   String? _passwordError;
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -170,7 +171,7 @@ class _LoginPageState extends State<LoginPage> {
                               // Password field
                               TextField(
                                 controller: _passwordController,
-                                obscureText: true,
+                                obscureText: _obscurePassword,
                                 decoration: InputDecoration(
                                   hintText: 'Contraseña',
                                   filled: true,
@@ -185,6 +186,20 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                   hintStyle: const TextStyle(
                                     color: Colors.white70,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                      color: Colors.white70,
+                                    ),
+                                    splashRadius: 18,
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
                                   ),
                                   errorText: _passwordError,
                                   errorStyle: const TextStyle(
