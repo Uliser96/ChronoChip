@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:chronochip/src/shared/theme/app_colors.dart';
-import 'package:chronochip/src/core/services/api/api_client.dart';
-import 'package:chronochip/src/core/services/api/api_exception.dart';
 import 'package:chronochip/src/presentation/event_detail/event_detail.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'bloc/available_events_bloc.dart';
+import 'bloc/available_events_event.dart';
+import 'bloc/available_events_state.dart';
+import 'available_event.dart';
 
 class AvailableEventsPage extends StatefulWidget {
   const AvailableEventsPage({super.key});
@@ -13,34 +16,38 @@ class AvailableEventsPage extends StatefulWidget {
 
 class _AvailableEventsPageState extends State<AvailableEventsPage> {
   final TextEditingController _searchController = TextEditingController();
-  final List<_Event> _events = [];
-  List<_Event> _filtered = [];
-  bool _loading = false;
-  String? _error;
+  List<AvailableEvent> _filtered = [];
+  late final AvailableEventsBloc _bloc;
 
   // Uses ApiClient.baseUrl defined in ApiClient
 
   @override
   void initState() {
     super.initState();
+    _bloc = AvailableEventsBloc();
+    _bloc.add(const AvailableEventsFetch());
     _searchController.addListener(_onSearchChanged);
-    _fetchEvents();
   }
 
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _bloc.close();
     super.dispose();
   }
 
   void _onSearchChanged() {
     final q = _searchController.text.toLowerCase();
+    final state = _bloc.state;
+    final source = state is AvailableEventsSuccess
+        ? state.events
+        : <AvailableEvent>[];
     setState(() {
       if (q.isEmpty) {
-        _filtered = List.from(_events);
+        _filtered = List.from(source);
       } else {
-        _filtered = _events.where((e) {
+        _filtered = source.where((e) {
           return e.name.toLowerCase().contains(q) ||
               e.location.toLowerCase().contains(q);
         }).toList();
@@ -49,125 +56,113 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
   }
 
   Future<void> _fetchEvents() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      final api = ApiClient();
-      final body = await api.get('api/events');
-      final rows = body?['data']?['rows'] as List<dynamic>? ?? [];
-      _events.clear();
-      for (final item in rows) {
-        _events.add(_Event.fromJson(item as Map<String, dynamic>));
-      }
-      setState(() {
-        _filtered = List.from(_events);
-      });
-    } on ApiException catch (e) {
-      setState(() {
-        _error = e.message;
-      });
-    } catch (e) {
-      setState(() {
-        _error = 'Error: $e';
-      });
-    } finally {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
-    }
+    // delegate loading to the bloc
+    _bloc.add(const AvailableEventsFetch());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset('assets/imgs/main_background.png', fit: BoxFit.cover),
-          SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 24,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '¡Es momento de elegir',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontStyle: FontStyle.italic,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const Text(
-                        'tu próximo reto!',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Buscar',
-                          prefixIcon: const Icon(Icons.search),
-                          filled: true,
-                          fillColor: Colors.grey.shade300,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+    return BlocProvider<AvailableEventsBloc>.value(
+      value: _bloc,
+      child: Scaffold(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset('assets/imgs/main_background.png', fit: BoxFit.cover),
+            SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 24,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '¡Es momento de elegir',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontStyle: FontStyle.italic,
+                            color: AppColors.primary,
                           ),
                         ),
-                      ),
-                    ],
+                        const Text(
+                          'tu próximo reto!',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Buscar',
+                            prefixIcon: const Icon(Icons.search),
+                            filled: true,
+                            fillColor: Colors.grey.shade300,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildBody(),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: _buildBody(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildBody() {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_error != null) {
-      return Center(child: Text(_error!));
-    }
-    if (_filtered.isEmpty) {
-      return const Center(child: Text('No hay eventos disponibles'));
-    }
-    return ListView.separated(
-      itemCount: _filtered.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final e = _filtered[index];
-        return _buildEventCard(
-          id: e.id,
-          title: e.name,
-          date: e.date,
-          location: e.location,
+    return BlocBuilder<AvailableEventsBloc, AvailableEventsState>(
+      builder: (context, state) {
+        if (state is AvailableEventsLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (state is AvailableEventsFailure) {
+          return Center(child: Text(state.error));
+        }
+
+        final events = state is AvailableEventsSuccess
+            ? state.events
+            : <AvailableEvent>[];
+        if (_filtered.isEmpty && events.isEmpty) {
+          return const Center(child: Text('No hay eventos disponibles'));
+        }
+
+        final list = _filtered.isNotEmpty ? _filtered : events;
+
+        return ListView.separated(
+          itemCount: list.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final e = list[index];
+            return _buildEventCard(
+              id: e.id,
+              title: e.name,
+              date: e.date,
+              location: e.location,
+            );
+          },
         );
       },
     );
@@ -273,31 +268,6 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _Event {
-  final String name;
-  final String date;
-  final String location;
-  final int id;
-
-  _Event({
-    required this.name,
-    required this.date,
-    required this.location,
-    required this.id,
-  });
-
-  factory _Event.fromJson(Map<String, dynamic> json) {
-    return _Event(
-      name: json['name'] as String? ?? '',
-      date: json['date'] as String? ?? '',
-      location: json['location'] as String? ?? '',
-      id: (json['id'] is int)
-          ? json['id'] as int
-          : int.tryParse('${json['id']}') ?? 0,
     );
   }
 }
