@@ -103,4 +103,19 @@ class ApiService {
       throw Exception('Error en requestVerificationCode: $e');
     }
   }
+
+  /// Solicita restablecer la contraseña (forgot password)
+  Future<Map<String, dynamic>> forgotPassword({required String email}) async {
+    try {
+      final response = await _apiClient.post(
+        'api/public/forgot-password',
+        body: {'email': email},
+      );
+
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error en forgotPassword: $e');
+    }
+  }
 }
