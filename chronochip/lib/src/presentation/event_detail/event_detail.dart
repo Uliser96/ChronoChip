@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chronochip/src/shared/theme/app_colors.dart';
+import 'package:chronochip/src/core/routers/routers.dart';
+import 'package:chronochip/src/presentation/event_detail_info/event_detail_info_page.dart';
 import 'package:chronochip/src/core/services/api/api_client.dart';
 import 'package:chronochip/src/core/services/api/api_exception.dart';
 
@@ -101,11 +103,31 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             _SmallOutlinedButton(
                               label: 'Información',
                               icon: Icons.info_outline,
+                              onPressed: () {
+                                if (_event == null) return;
+                                final info = EventDetailInfo(
+                                  name: _event!.name,
+                                  date: _event!.date,
+                                  location: _event!.location,
+                                  registrationStartDate:
+                                      _event!.registrationStartDate,
+                                  registrationEndDate:
+                                      _event!.registrationEndDate,
+                                  finished: _event!.finished,
+                                );
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        EventDetailInfoPage(event: info),
+                                  ),
+                                );
+                              },
                             ),
                             const SizedBox(width: 12),
                             _SmallOutlinedButton(
                               label: 'Convocatoria',
                               icon: Icons.description_outlined,
+                              onPressed: () {},
                             ),
                           ],
                         ),
@@ -207,18 +229,20 @@ class _SmallOutlinedButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final String? subtitle;
+  final VoidCallback? onPressed;
 
   const _SmallOutlinedButton({
     required this.label,
     required this.icon,
     this.subtitle,
+    this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: OutlinedButton(
-        onPressed: () {},
+        onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           backgroundColor: Colors.white,
           side: BorderSide(color: AppColors.primary, width: 1.5),

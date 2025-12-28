@@ -7,6 +7,7 @@ import 'package:chronochip/src/presentation/register/bloc/gender_bloc.dart';
 import 'package:chronochip/src/presentation/reset_password/reset_password.dart';
 import 'package:chronochip/src/presentation/welcome/welcome.dart';
 import 'package:chronochip/src/presentation/home/home_page.dart';
+import 'package:chronochip/src/presentation/event_detail_info/event_detail_info_page.dart';
 
 /// Centralized app routes.
 class Routers {
@@ -17,6 +18,7 @@ class Routers {
   static const String resetPassword = '/reset-password';
   static const String register = '/register';
   static const String home = '/home';
+  static const String eventDetailInfo = '/event-detail-info';
 
   static Map<String, WidgetBuilder> get routes => {
     welcome: (context) => const WelcomePage(),
@@ -30,5 +32,20 @@ class Routers {
       child: const RegisterPage(),
     ),
     home: (context) => const HomePage(),
+    eventDetailInfo: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is EventDetailInfo) {
+        return EventDetailInfoPage(event: args);
+      }
+      final fallback = EventDetailInfo(
+        name: '',
+        date: '',
+        location: '',
+        registrationStartDate: '',
+        registrationEndDate: '',
+        finished: false,
+      );
+      return EventDetailInfoPage(event: fallback);
+    },
   };
 }
