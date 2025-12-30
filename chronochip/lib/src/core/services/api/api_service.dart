@@ -1,5 +1,6 @@
 import 'package:chronochip/src/core/models/login_response.dart';
 import 'package:chronochip/src/core/models/gender_response.dart';
+import 'package:chronochip/src/core/models/runner_response.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 import '../../models/register_response.dart';
@@ -116,6 +117,20 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw Exception('Error en forgotPassword: $e');
+    }
+  }
+
+  /// Obtiene la lista de corredores registrados para la inscripción
+  Future<List<Runner>> getRunners() async {
+    try {
+      final response = await _apiClient.get('api/race-registration/runners');
+
+      // response expected: { "message": "Success", "data": [ {...} ] }
+      final parsed = RunnerResponse.fromJson(response as Map<String, dynamic>);
+      return parsed.data;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al obtener corredores: $e');
     }
   }
 }

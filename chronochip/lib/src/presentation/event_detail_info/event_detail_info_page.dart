@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/event_detail_info_bloc.dart';
 import 'bloc/event_detail_info_event.dart';
 import 'bloc/event_detail_info_state.dart';
+import 'package:chronochip/src/core/routers/routers.dart';
 
 class EventDetailInfo {
   final String name;
@@ -172,9 +173,13 @@ class EventDetailInfoPage extends StatelessWidget {
                       return ElevatedButton(
                         onPressed: state.isSubmitting
                             ? null
-                            : () => context.read<EventDetailInfoBloc>().add(
-                                EventDetailInfoRegistrationRequested(),
-                              ),
+                            : () {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routers.raceRegistration,
+                                  arguments: state.event,
+                                );
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFF08A00),
                           foregroundColor: Colors.white,

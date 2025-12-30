@@ -8,6 +8,7 @@ import 'package:chronochip/src/presentation/reset_password/reset_password.dart';
 import 'package:chronochip/src/presentation/welcome/welcome.dart';
 import 'package:chronochip/src/presentation/home/home_page.dart';
 import 'package:chronochip/src/presentation/event_detail_info/event_detail_info_page.dart';
+import 'package:chronochip/src/presentation/race_registration/race_registration_page.dart';
 
 /// Centralized app routes.
 class Routers {
@@ -19,6 +20,7 @@ class Routers {
   static const String register = '/register';
   static const String home = '/home';
   static const String eventDetailInfo = '/event-detail-info';
+  static const String raceRegistration = '/race-registration';
 
   static Map<String, WidgetBuilder> get routes => {
     welcome: (context) => const WelcomePage(),
@@ -46,6 +48,9 @@ class Routers {
         finished: false,
       );
       return EventDetailInfoPage(event: fallback);
+    },
+    raceRegistration: (context) {
+      return const RaceRegistrationPage();
     },
   };
 }

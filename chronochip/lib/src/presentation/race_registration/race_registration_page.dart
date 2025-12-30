@@ -1,0 +1,818 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:chronochip/src/shared/theme/app_colors.dart';
+import 'package:chronochip/src/core/models/gender_response.dart';
+import 'race_registration_bloc.dart';
+import 'race_registration_event.dart';
+import 'race_registration_state.dart';
+
+class RaceRegistrationPage extends StatefulWidget {
+  const RaceRegistrationPage({super.key});
+
+  @override
+  State<RaceRegistrationPage> createState() => _RaceRegistrationPageState();
+}
+
+class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
+  late TextEditingController _nameController;
+  late TextEditingController _surnameController;
+  late TextEditingController _teamController;
+  late TextEditingController _dobController;
+  Gender? _selectedSex;
+  int? _selectedRunnerId;
+  String? _selectedCategory;
+  String? _selectedJersey;
+  final List<String> _categoryOptions = [];
+  final List<String> _jerseyOptions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+    _surnameController = TextEditingController();
+    _teamController = TextEditingController();
+    _dobController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _surnameController.dispose();
+    _teamController.dispose();
+    _dobController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => RaceRegistrationBloc(),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/imgs/main_background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: SafeArea(
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: BlocListener<RaceRegistrationBloc, RaceRegistrationState>(
+                            listener: (context, state) {
+                              if (state.isSuccess) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Registro listo. Procede al pago.',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              } else if (state.error != null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(state.error!),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context).size.width * 0.82,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 20,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: SingleChildScrollView(
+                                physics: const BouncingScrollPhysics(),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(
+                                      'Inscripción a carrera',
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge
+                                          ?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    // Corredores dropdown (cargado desde API)
+                                    BlocBuilder<
+                                      RaceRegistrationBloc,
+                                      RaceRegistrationState
+                                    >(
+                                      builder: (context, state) {
+                                        final boxDecoration = BoxDecoration(
+                                          color: const Color.fromRGBO(
+                                            255,
+                                            255,
+                                            255,
+                                            0.18,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        );
+
+                                        if (state.runners.isEmpty) {
+                                          return Container(
+                                            height: 48,
+                                            alignment: Alignment.centerLeft,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                            decoration: boxDecoration,
+                                            child: DropdownButton<int>(
+                                              isExpanded: true,
+                                              underline:
+                                                  const SizedBox.shrink(),
+                                              value: _selectedRunnerId ?? -1,
+                                              items: [
+                                                DropdownMenuItem<int>(
+                                                  value: -1,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 14,
+                                                          vertical: 12,
+                                                        ),
+                                                    child: Text(
+                                                      'Sin datos de corredores',
+                                                      style: const TextStyle(
+                                                        color: Colors.white70,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                              onChanged: null,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                              dropdownColor:
+                                                  const Color.fromRGBO(
+                                                    241,
+                                                    136,
+                                                    0,
+                                                    0.9,
+                                                  ),
+                                            ),
+                                          );
+                                        }
+
+                                        return Container(
+                                          height: 48,
+                                          alignment: Alignment.centerLeft,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: boxDecoration,
+                                          child: DropdownButton<int>(
+                                            isExpanded: true,
+                                            underline: const SizedBox.shrink(),
+                                            hint: const Text(
+                                              'corredores',
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                              ),
+                                            ),
+                                            value: _selectedRunnerId,
+                                            items: state.runners.map((r) {
+                                              return DropdownMenuItem<int>(
+                                                value: r.id,
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 14,
+                                                        vertical: 12,
+                                                      ),
+                                                  child: Text(
+                                                    '${r.firstName} ${r.lastName}',
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            }).toList(),
+                                            onChanged: (val) {
+                                              setState(() {
+                                                _selectedRunnerId = val;
+                                              });
+                                            },
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                            dropdownColor: const Color.fromRGBO(
+                                              241,
+                                              136,
+                                              0,
+                                              0.9,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    TextField(
+                                      controller: _nameController,
+                                      decoration: InputDecoration(
+                                        hintText: 'Nombre',
+                                        filled: true,
+                                        fillColor: const Color.fromRGBO(
+                                          255,
+                                          255,
+                                          255,
+                                          0.18,
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 14,
+                                              vertical: 12,
+                                            ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        hintStyle: const TextStyle(
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    TextField(
+                                      controller: _surnameController,
+                                      decoration: InputDecoration(
+                                        hintText: 'Apellidos',
+                                        filled: true,
+                                        fillColor: const Color.fromRGBO(
+                                          255,
+                                          255,
+                                          255,
+                                          0.18,
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 14,
+                                              vertical: 12,
+                                            ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        hintStyle: const TextStyle(
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 12),
+
+                                    // Sexo dropdown
+                                    const SizedBox(height: 8),
+                                    BlocBuilder<
+                                      RaceRegistrationBloc,
+                                      RaceRegistrationState
+                                    >(
+                                      builder: (context, state) {
+                                        return Container(
+                                          height: 48,
+                                          alignment: Alignment.centerLeft,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color.fromRGBO(
+                                              255,
+                                              255,
+                                              255,
+                                              0.18,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: DropdownButton<Gender>(
+                                            isExpanded: true,
+                                            underline: const SizedBox.shrink(),
+                                            hint: const Text(
+                                              'Sexo',
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                              ),
+                                            ),
+                                            value: _selectedSex,
+                                            items: state.genders.map((g) {
+                                              return DropdownMenuItem<Gender>(
+                                                value: g,
+                                                child: Text(
+                                                  g.name,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              );
+                                            }).toList(),
+                                            onChanged: state.genders.isEmpty
+                                                ? null
+                                                : (Gender? val) {
+                                                    setState(() {
+                                                      _selectedSex = val;
+                                                    });
+                                                  },
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                            dropdownColor: const Color.fromRGBO(
+                                              241,
+                                              136,
+                                              0,
+                                              0.9,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+
+                                    const SizedBox(height: 12),
+
+                                    // Fecha de nacimiento (date picker)
+                                    TextField(
+                                      controller: _dobController,
+                                      readOnly: true,
+                                      onTap: () async {
+                                        final initialDate =
+                                            _dobController.text.isNotEmpty
+                                            ? DateTime.tryParse(
+                                                    _dobController.text,
+                                                  ) ??
+                                                  DateTime.now()
+                                            : DateTime.now();
+                                        final picked = await showDatePicker(
+                                          context: context,
+                                          initialDate: initialDate,
+                                          firstDate: DateTime(1900),
+                                          lastDate: DateTime.now(),
+                                          builder: (context, child) {
+                                            final theme = Theme.of(context);
+                                            final colorScheme = theme
+                                                .colorScheme
+                                                .copyWith(
+                                                  primary: AppColors.primary,
+                                                  onPrimary: Colors.white,
+                                                  surface: Colors.white,
+                                                  onSurface: Colors.black,
+                                                );
+                                            return Theme(
+                                              data: theme.copyWith(
+                                                colorScheme: colorScheme,
+                                                textButtonTheme:
+                                                    TextButtonThemeData(
+                                                      style:
+                                                          TextButton.styleFrom(
+                                                            foregroundColor:
+                                                                AppColors
+                                                                    .primary,
+                                                          ),
+                                                    ),
+                                                dialogBackgroundColor:
+                                                    Colors.white,
+                                              ),
+                                              child:
+                                                  child ??
+                                                  const SizedBox.shrink(),
+                                            );
+                                          },
+                                        );
+                                        if (picked != null) {
+                                          _dobController.text = picked
+                                              .toIso8601String()
+                                              .split('T')
+                                              .first;
+                                          setState(() {});
+                                        }
+                                      },
+                                      decoration: InputDecoration(
+                                        hintText: 'Fecha de nacimiento',
+                                        filled: true,
+                                        fillColor: const Color.fromRGBO(
+                                          255,
+                                          255,
+                                          255,
+                                          0.18,
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 14,
+                                              vertical: 12,
+                                            ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        hintStyle: const TextStyle(
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 12),
+
+                                    // Nombre del equipo
+                                    TextField(
+                                      controller: _teamController,
+                                      decoration: InputDecoration(
+                                        hintText: 'Nombre del equipo',
+                                        filled: true,
+                                        fillColor: const Color.fromRGBO(
+                                          255,
+                                          255,
+                                          255,
+                                          0.18,
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 14,
+                                              vertical: 12,
+                                            ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        hintStyle: const TextStyle(
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 12),
+
+                                    // Categoría dropdown
+                                    Container(
+                                      height: 48,
+                                      alignment: Alignment.centerLeft,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromRGBO(
+                                          255,
+                                          255,
+                                          255,
+                                          0.18,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: DropdownButton<String>(
+                                        isExpanded: true,
+                                        underline: const SizedBox.shrink(),
+                                        hint: const Text(
+                                          'Categoría',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                          ),
+                                        ),
+                                        value: _selectedCategory,
+                                        items: _categoryOptions.map((c) {
+                                          return DropdownMenuItem<String>(
+                                            value: c,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 14,
+                                                    vertical: 12,
+                                                  ),
+                                              child: Text(
+                                                c,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: _categoryOptions.isEmpty
+                                            ? null
+                                            : (val) {
+                                                setState(() {
+                                                  _selectedCategory = val;
+                                                });
+                                              },
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                        dropdownColor: const Color.fromRGBO(
+                                          241,
+                                          136,
+                                          0,
+                                          0.9,
+                                        ),
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 12),
+
+                                    // Jersey dropdown
+                                    Container(
+                                      height: 48,
+                                      alignment: Alignment.centerLeft,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromRGBO(
+                                          255,
+                                          255,
+                                          255,
+                                          0.18,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: DropdownButton<String>(
+                                        isExpanded: true,
+                                        underline: const SizedBox.shrink(),
+                                        hint: const Text(
+                                          'Jersey conmemorativo',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                          ),
+                                        ),
+                                        value: _selectedJersey,
+                                        items: _jerseyOptions.map((j) {
+                                          return DropdownMenuItem<String>(
+                                            value: j,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 14,
+                                                    vertical: 12,
+                                                  ),
+                                              child: Text(
+                                                j,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: _jerseyOptions.isEmpty
+                                            ? null
+                                            : (val) {
+                                                setState(() {
+                                                  _selectedJersey = val;
+                                                });
+                                              },
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                        dropdownColor: const Color.fromRGBO(
+                                          241,
+                                          136,
+                                          0,
+                                          0.9,
+                                        ),
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 12),
+
+                                    // Checkbox replacing "Confirmar" button
+                                    BlocBuilder<
+                                      RaceRegistrationBloc,
+                                      RaceRegistrationState
+                                    >(
+                                      builder: (context, state) {
+                                        return Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () {
+                                                context
+                                                    .read<
+                                                      RaceRegistrationBloc
+                                                    >()
+                                                    .add(
+                                                      ConfirmToggled(
+                                                        !state.isConfirmed,
+                                                      ),
+                                                    );
+                                              },
+                                              child: Container(
+                                                width: 22,
+                                                height: 22,
+                                                decoration: BoxDecoration(
+                                                  color: state.isConfirmed
+                                                      ? Colors.white
+                                                      : const Color.fromRGBO(
+                                                          255,
+                                                          255,
+                                                          255,
+                                                          0.18,
+                                                        ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                ),
+                                                child: state.isConfirmed
+                                                    ? const Icon(
+                                                        Icons.check,
+                                                        size: 16,
+                                                        color:
+                                                            AppColors.primary,
+                                                      )
+                                                    : null,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Text(
+                                                'Confirmo que la información que proporcioné es correcta',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+
+                                    const SizedBox(height: 18),
+
+                                    // Realizar pago button
+                                    BlocBuilder<
+                                      RaceRegistrationBloc,
+                                      RaceRegistrationState
+                                    >(
+                                      builder: (context, state) {
+                                        final isEnabled =
+                                            state.isConfirmed &&
+                                            !state.isSubmitting;
+                                        return ElevatedButton(
+                                          onPressed: isEnabled
+                                              ? () {
+                                                  context
+                                                      .read<
+                                                        RaceRegistrationBloc
+                                                      >()
+                                                      .add(
+                                                        const SubmitRegistrationPressed(),
+                                                      );
+                                                }
+                                              : null,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.white,
+                                            foregroundColor: AppColors.primary,
+                                            disabledBackgroundColor:
+                                                const Color.fromRGBO(
+                                                  255,
+                                                  255,
+                                                  255,
+                                                  0.5,
+                                                ),
+                                            disabledForegroundColor:
+                                                const Color.fromRGBO(
+                                                  241,
+                                                  136,
+                                                  0,
+                                                  0.5,
+                                                ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 14,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            side: BorderSide(
+                                              color: isEnabled
+                                                  ? AppColors.primary
+                                                  : const Color.fromRGBO(
+                                                      241,
+                                                      136,
+                                                      0,
+                                                      0.5,
+                                                    ),
+                                              width: 1.5,
+                                            ),
+                                            elevation: isEnabled ? 4 : 0,
+                                            shadowColor: const Color.fromRGBO(
+                                              241,
+                                              136,
+                                              0,
+                                              0.2,
+                                            ),
+                                          ),
+                                          child: state.isSubmitting
+                                              ? SizedBox(
+                                                  height: 20,
+                                                  width: 20,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation<
+                                                          Color
+                                                        >(AppColors.primary),
+                                                  ),
+                                                )
+                                              : Text(
+                                                  'Realizar pago',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.primary,
+                                                  ),
+                                                ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: Image.asset(
+                          'assets/imgs/logo.png',
+                          height: 90,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
