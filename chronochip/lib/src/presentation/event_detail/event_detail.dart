@@ -115,6 +115,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                   registrationEndDate:
                                       _event!.registrationEndDate,
                                   finished: _event!.finished,
+                                  event: _event!.event,
                                 );
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
@@ -177,6 +178,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                     registrationEndDate:
                                         _event!.registrationEndDate,
                                     finished: _event!.finished,
+                                    event: _event!.event,
                                   );
                                   Navigator.pushNamed(
                                     context,
@@ -218,6 +220,7 @@ class _EventDetail {
   final String registrationStartDate;
   final String registrationEndDate;
   final bool finished;
+  final Map<String, dynamic>? event; // nested event object from API
 
   _EventDetail({
     required this.id,
@@ -227,6 +230,7 @@ class _EventDetail {
     required this.registrationStartDate,
     required this.registrationEndDate,
     required this.finished,
+    this.event,
   });
 
   factory _EventDetail.fromJson(Map<String, dynamic> json) {
@@ -238,6 +242,7 @@ class _EventDetail {
       registrationStartDate: json['registrationStartDate'] as String? ?? '',
       registrationEndDate: json['registrationEndDate'] as String? ?? '',
       finished: json['finished'] as bool? ?? false,
+      event: json['event'] as Map<String, dynamic>?,
     );
   }
 

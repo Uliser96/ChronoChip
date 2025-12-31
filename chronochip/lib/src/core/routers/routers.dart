@@ -55,9 +55,9 @@ class Routers {
     raceRegistration: (context) {
       final args = ModalRoute.of(context)?.settings.arguments;
       if (args is EventDetailInfo) {
-        return RaceRegistrationPage(eventId: args.id);
+        return RaceRegistrationPage(eventId: args.id, event: args.event);
       }
-      return const RaceRegistrationPage(eventId: 0);
+      return const RaceRegistrationPage(eventId: 0, event: null);
     },
     payment: (context) => const PaymentPage(),
   };

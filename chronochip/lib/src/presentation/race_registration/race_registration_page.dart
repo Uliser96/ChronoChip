@@ -11,7 +11,8 @@ import 'package:chronochip/src/core/routers/routers.dart';
 
 class RaceRegistrationPage extends StatefulWidget {
   final int eventId;
-  const RaceRegistrationPage({super.key, required this.eventId});
+  final Map<String, dynamic>? event;
+  const RaceRegistrationPage({super.key, required this.eventId, this.event});
 
   @override
   State<RaceRegistrationPage> createState() => _RaceRegistrationPageState();
@@ -644,85 +645,92 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
                                       },
                                     ),
 
-                                    const SizedBox(height: 12),
-
-                                    // Jersey dropdown
-                                    Container(
-                                      height: 48,
-                                      alignment: Alignment.centerLeft,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color.fromRGBO(
-                                          255,
-                                          255,
-                                          255,
-                                          0.18,
+                                    // Jersey dropdown (only show if event allows tshirt size)
+                                    if (widget.event?['allowTshirtSize'] ==
+                                        true) ...[
+                                      const SizedBox(height: 12),
+                                      Container(
+                                        height: 48,
+                                        alignment: Alignment.centerLeft,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
                                         ),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child:
-                                          BlocBuilder<
-                                            RaceRegistrationBloc,
-                                            RaceRegistrationState
-                                          >(
-                                            builder: (context, state) {
-                                              final sizes = state.tshirtSizes;
-                                              return DropdownButton<String>(
-                                                isExpanded: true,
-                                                underline:
-                                                    const SizedBox.shrink(),
-                                                hint: const Text(
-                                                  'Jersey conmemorativo',
-                                                  style: TextStyle(
-                                                    color: Colors.white70,
+                                        decoration: BoxDecoration(
+                                          color: const Color.fromRGBO(
+                                            255,
+                                            255,
+                                            255,
+                                            0.18,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child:
+                                            BlocBuilder<
+                                              RaceRegistrationBloc,
+                                              RaceRegistrationState
+                                            >(
+                                              builder: (context, state) {
+                                                final sizes = state.tshirtSizes;
+                                                return DropdownButton<String>(
+                                                  isExpanded: true,
+                                                  underline:
+                                                      const SizedBox.shrink(),
+                                                  hint: const Text(
+                                                    'Jersey conmemorativo',
+                                                    style: TextStyle(
+                                                      color: Colors.white70,
+                                                    ),
                                                   ),
-                                                ),
-                                                value: _selectedJersey,
-                                                items: sizes.map((t) {
-                                                  return DropdownMenuItem<
-                                                    String
-                                                  >(
-                                                    value: t.description,
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 14,
-                                                            vertical: 12,
-                                                          ),
-                                                      child: Text(
-                                                        t.description,
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 16,
+                                                  value: _selectedJersey,
+                                                  items: sizes.map((t) {
+                                                    return DropdownMenuItem<
+                                                      String
+                                                    >(
+                                                      value: t.description,
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 14,
+                                                              vertical: 12,
+                                                            ),
+                                                        child: Text(
+                                                          t.description,
+                                                          style:
+                                                              const TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize: 16,
+                                                              ),
                                                         ),
                                                       ),
-                                                    ),
-                                                  );
-                                                }).toList(),
-                                                onChanged: sizes.isEmpty
-                                                    ? null
-                                                    : (val) {
-                                                        setState(() {
-                                                          _selectedJersey = val;
-                                                        });
-                                                      },
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                ),
-                                                dropdownColor:
-                                                    const Color.fromRGBO(
-                                                      241,
-                                                      136,
-                                                      0,
-                                                      0.9,
-                                                    ),
-                                              );
-                                            },
-                                          ),
-                                    ),
+                                                    );
+                                                  }).toList(),
+                                                  onChanged: sizes.isEmpty
+                                                      ? null
+                                                      : (val) {
+                                                          setState(() {
+                                                            _selectedJersey =
+                                                                val;
+                                                          });
+                                                        },
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                  dropdownColor:
+                                                      const Color.fromRGBO(
+                                                        241,
+                                                        136,
+                                                        0,
+                                                        0.9,
+                                                      ),
+                                                );
+                                              },
+                                            ),
+                                      ),
+                                    ],
 
                                     const SizedBox(height: 12),
 

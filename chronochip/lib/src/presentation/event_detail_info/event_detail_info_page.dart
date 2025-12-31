@@ -13,6 +13,7 @@ class EventDetailInfo {
   final String registrationStartDate;
   final String registrationEndDate;
   final bool finished;
+  final Map<String, dynamic>? event; // nested event object from API
 
   EventDetailInfo({
     required this.id,
@@ -22,6 +23,7 @@ class EventDetailInfo {
     required this.registrationStartDate,
     required this.registrationEndDate,
     required this.finished,
+    this.event,
   });
 
   String get formattedDate {
