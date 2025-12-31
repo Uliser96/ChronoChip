@@ -31,3 +31,21 @@ class RunnersLoaded extends RaceRegistrationEvent {
   @override
   List<Object?> get props => [runners];
 }
+
+class FetchCategories extends RaceRegistrationEvent {
+  final int genderId;
+  final String birthdate;
+  const FetchCategories({required this.genderId, required this.birthdate});
+
+  @override
+  List<Object?> get props => [genderId, birthdate];
+}
+
+// internal event for categories loaded
+class CategoriesLoaded extends RaceRegistrationEvent {
+  final List<dynamic> categories;
+  const CategoriesLoaded(this.categories);
+
+  @override
+  List<Object?> get props => [categories];
+}

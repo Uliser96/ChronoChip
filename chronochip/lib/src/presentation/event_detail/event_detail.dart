@@ -106,6 +106,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                               onPressed: () {
                                 if (_event == null) return;
                                 final info = EventDetailInfo(
+                                  id: _event!.id,
                                   name: _event!.name,
                                   date: _event!.date,
                                   location: _event!.location,
@@ -191,6 +192,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
 }
 
 class _EventDetail {
+  final int id;
   final String name;
   final String date;
   final String location;
@@ -199,6 +201,7 @@ class _EventDetail {
   final bool finished;
 
   _EventDetail({
+    required this.id,
     required this.name,
     required this.date,
     required this.location,
@@ -209,6 +212,7 @@ class _EventDetail {
 
   factory _EventDetail.fromJson(Map<String, dynamic> json) {
     return _EventDetail(
+      id: json['id'] as int? ?? 0,
       name: json['name'] as String? ?? '',
       date: json['date'] as String? ?? '',
       location: json['location'] as String? ?? '',

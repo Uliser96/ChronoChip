@@ -7,7 +7,8 @@ import 'race_registration_event.dart';
 import 'race_registration_state.dart';
 
 class RaceRegistrationPage extends StatefulWidget {
-  const RaceRegistrationPage({super.key});
+  final int eventId;
+  const RaceRegistrationPage({super.key, required this.eventId});
 
   @override
   State<RaceRegistrationPage> createState() => _RaceRegistrationPageState();
@@ -24,10 +25,12 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
   String? _selectedJersey;
   final List<String> _categoryOptions = [];
   final List<String> _jerseyOptions = [];
+  RaceRegistrationBloc? _bloc;
 
   @override
   void initState() {
     super.initState();
+    _bloc = RaceRegistrationBloc(eventId: widget.eventId);
     _nameController = TextEditingController();
     _surnameController = TextEditingController();
     _teamController = TextEditingController();
@@ -36,6 +39,7 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
 
   @override
   void dispose() {
+    _bloc?.close();
     _nameController.dispose();
     _surnameController.dispose();
     _teamController.dispose();
@@ -45,8 +49,8 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => RaceRegistrationBloc(),
+    return BlocProvider.value(
+      value: _bloc!,
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         body: Stack(
@@ -226,9 +230,22 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
                                                 ),
                                               );
                                             }).toList(),
-                                            onChanged: (val) {
+                                            onChanged: (int? val) {
+                                              if (val == null) return;
+                                              final selected = state.runners
+                                                  .firstWhere(
+                                                    (r) => r.id == val,
+                                                  );
                                               setState(() {
                                                 _selectedRunnerId = val;
+                                                _nameController.text =
+                                                    selected.firstName;
+                                                _surnameController.text =
+                                                    selected.lastName;
+                                                _dobController.text =
+                                                    selected.birthdate;
+                                                // reset selected category when runner changes
+                                                _selectedCategory = null;
                                               });
                                             },
                                             style: const TextStyle(
@@ -364,7 +381,24 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
                                                 : (Gender? val) {
                                                     setState(() {
                                                       _selectedSex = val;
+                                                      // reset selected category whenever sex changes
+                                                      _selectedCategory = null;
                                                     });
+
+                                                    // If DOB already selected, fetch categories
+                                                    if (val != null &&
+                                                        _dobController
+                                                            .text
+                                                            .isNotEmpty) {
+                                                      _bloc?.add(
+                                                        FetchCategories(
+                                                          genderId: val.id,
+                                                          birthdate:
+                                                              _dobController
+                                                                  .text,
+                                                        ),
+                                                      );
+                                                    }
                                                   },
                                             style: const TextStyle(
                                               color: Colors.white,
@@ -431,11 +465,25 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
                                           },
                                         );
                                         if (picked != null) {
-                                          _dobController.text = picked
+                                          final newDate = picked
                                               .toIso8601String()
                                               .split('T')
                                               .first;
-                                          setState(() {});
+                                          setState(() {
+                                            _dobController.text = newDate;
+                                            // reset selected category whenever DOB changes
+                                            _selectedCategory = null;
+                                          });
+
+                                          // If sex already selected, fetch categories
+                                          if (_selectedSex != null) {
+                                            _bloc?.add(
+                                              FetchCategories(
+                                                genderId: _selectedSex!.id,
+                                                birthdate: _dobController.text,
+                                              ),
+                                            );
+                                          }
                                         }
                                       },
                                       decoration: InputDecoration(
@@ -505,69 +553,99 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
 
                                     const SizedBox(height: 12),
 
-                                    // Categoría dropdown
-                                    Container(
-                                      height: 48,
-                                      alignment: Alignment.centerLeft,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color.fromRGBO(
-                                          255,
-                                          255,
-                                          255,
-                                          0.18,
-                                        ),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: DropdownButton<String>(
-                                        isExpanded: true,
-                                        underline: const SizedBox.shrink(),
-                                        hint: const Text(
-                                          'Categoría',
-                                          style: TextStyle(
-                                            color: Colors.white70,
+                                    // Categoría dropdown (populated from API)
+                                    BlocBuilder<
+                                      RaceRegistrationBloc,
+                                      RaceRegistrationState
+                                    >(
+                                      builder: (context, state) {
+                                        final boxDecoration = BoxDecoration(
+                                          color: const Color.fromRGBO(
+                                            255,
+                                            255,
+                                            255,
+                                            0.18,
                                           ),
-                                        ),
-                                        value: _selectedCategory,
-                                        items: _categoryOptions.map((c) {
-                                          return DropdownMenuItem<String>(
-                                            value: c,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 14,
-                                                    vertical: 12,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        );
+
+                                        final items = state.categories
+                                            .map(
+                                              (c) => DropdownMenuItem<String>(
+                                                value: c.displayName,
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 14,
+                                                        vertical: 12,
+                                                      ),
+                                                  child: Text(
+                                                    c.displayName,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 16,
+                                                    ),
                                                   ),
-                                              child: Text(
-                                                c,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
                                                 ),
                                               ),
+                                            )
+                                            .toList();
+
+                                        // Ensure the currently selected category maps to exactly one item
+                                        final selectedCount =
+                                            _selectedCategory == null
+                                            ? 0
+                                            : items
+                                                  .where(
+                                                    (it) =>
+                                                        it.value ==
+                                                        _selectedCategory,
+                                                  )
+                                                  .length;
+                                        final dropdownValue = selectedCount == 1
+                                            ? _selectedCategory
+                                            : null;
+
+                                        return Container(
+                                          height: 48,
+                                          alignment: Alignment.centerLeft,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: boxDecoration,
+                                          child: DropdownButton<String>(
+                                            isExpanded: true,
+                                            underline: const SizedBox.shrink(),
+                                            hint: const Text(
+                                              'Categoría',
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                              ),
                                             ),
-                                          );
-                                        }).toList(),
-                                        onChanged: _categoryOptions.isEmpty
-                                            ? null
-                                            : (val) {
-                                                setState(() {
-                                                  _selectedCategory = val;
-                                                });
-                                              },
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                        dropdownColor: const Color.fromRGBO(
-                                          241,
-                                          136,
-                                          0,
-                                          0.9,
-                                        ),
-                                      ),
+                                            value: dropdownValue,
+                                            items: items,
+                                            onChanged: items.isEmpty
+                                                ? null
+                                                : (val) {
+                                                    setState(() {
+                                                      _selectedCategory = val;
+                                                    });
+                                                  },
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                            dropdownColor: const Color.fromRGBO(
+                                              241,
+                                              136,
+                                              0,
+                                              0.9,
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
 
                                     const SizedBox(height: 12),

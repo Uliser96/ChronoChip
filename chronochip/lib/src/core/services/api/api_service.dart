@@ -1,6 +1,7 @@
 import 'package:chronochip/src/core/models/login_response.dart';
 import 'package:chronochip/src/core/models/gender_response.dart';
 import 'package:chronochip/src/core/models/runner_response.dart';
+import 'package:chronochip/src/core/models/event_category.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 import '../../models/register_response.dart';
@@ -131,6 +132,35 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw Exception('Error al obtener corredores: $e');
+    }
+  }
+
+  /// Obtiene las categorías de evento filtradas por evento/género/fecha
+  Future<List<EventCategory>> filterEventCategories({
+    required int eventId,
+    required int genderId,
+    required String birthdate,
+  }) async {
+    try {
+      final payload = {
+        'eventId': eventId,
+        'genderId': genderId,
+        'birthdate': birthdate,
+      };
+
+      final response = await _apiClient.post(
+        'api/race-registration/event-categories/filter',
+        body: payload,
+      );
+
+      final map = response as Map<String, dynamic>;
+      final data = map['data'] as List<dynamic>;
+      return data
+          .map((e) => EventCategory.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al obtener categorías: $e');
     }
   }
 }

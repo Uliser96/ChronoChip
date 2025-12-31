@@ -6,6 +6,7 @@ import 'bloc/event_detail_info_state.dart';
 import 'package:chronochip/src/core/routers/routers.dart';
 
 class EventDetailInfo {
+  final int id;
   final String name;
   final String date;
   final String location;
@@ -14,6 +15,7 @@ class EventDetailInfo {
   final bool finished;
 
   EventDetailInfo({
+    required this.id,
     required this.name,
     required this.date,
     required this.location,

@@ -40,6 +40,7 @@ class Routers {
         return EventDetailInfoPage(event: args);
       }
       final fallback = EventDetailInfo(
+        id: 0,
         name: '',
         date: '',
         location: '',
@@ -50,7 +51,11 @@ class Routers {
       return EventDetailInfoPage(event: fallback);
     },
     raceRegistration: (context) {
-      return const RaceRegistrationPage();
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is EventDetailInfo) {
+        return RaceRegistrationPage(eventId: args.id);
+      }
+      return const RaceRegistrationPage(eventId: 0);
     },
   };
 }

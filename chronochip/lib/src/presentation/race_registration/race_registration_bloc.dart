@@ -6,25 +6,31 @@ import 'package:chronochip/src/presentation/register/bloc/gender_event.dart';
 import 'package:chronochip/src/presentation/register/bloc/gender_state.dart';
 import 'package:chronochip/src/core/models/gender_response.dart';
 import 'package:chronochip/src/core/models/runner_response.dart';
+import 'package:chronochip/src/core/models/event_category.dart';
 import 'package:chronochip/src/core/services/api/api_service.dart';
 import 'race_registration_event.dart';
 import 'race_registration_state.dart';
 
 class RaceRegistrationBloc
     extends Bloc<RaceRegistrationEvent, RaceRegistrationState> {
+  final int eventId;
   final GenderBloc _genderBloc;
   final ApiService _apiService;
   late final StreamSubscription _genderSub;
-
-  RaceRegistrationBloc({GenderBloc? genderBloc, ApiService? apiService})
-    : _genderBloc = genderBloc ?? GenderBloc(),
-      _apiService = apiService ?? ApiService(),
-      super(RaceRegistrationState.initial()) {
+  RaceRegistrationBloc({
+    required this.eventId,
+    GenderBloc? genderBloc,
+    ApiService? apiService,
+  }) : _genderBloc = genderBloc ?? GenderBloc(),
+       _apiService = apiService ?? ApiService(),
+       super(RaceRegistrationState.initial()) {
     on<ConfirmToggled>(_onConfirmToggled);
     on<SubmitRegistrationPressed>(_onSubmitPressed);
     on<_GendersLoaded>(_onGendersLoaded);
     on<FetchRunners>(_onFetchRunners);
     on<RunnersLoaded>(_onRunnersLoaded);
+    on<FetchCategories>(_onFetchCategories);
+    on<CategoriesLoaded>(_onCategoriesLoaded);
 
     // trigger genders fetch and listen for updates
     _genderBloc.add(const GendersFetch());
@@ -78,6 +84,35 @@ class RaceRegistrationBloc
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }
+  }
+
+  FutureOr<void> _onFetchCategories(
+    FetchCategories event,
+    Emitter<RaceRegistrationState> emit,
+  ) async {
+    emit(state.copyWith(isCategoriesLoading: true, error: null));
+    try {
+      final fetched = await _apiService.filterEventCategories(
+        eventId: eventId,
+        genderId: event.genderId,
+        birthdate: event.birthdate,
+      );
+      add(CategoriesLoaded(fetched));
+    } catch (e) {
+      emit(state.copyWith(isCategoriesLoading: false, error: e.toString()));
+    }
+  }
+
+  FutureOr<void> _onCategoriesLoaded(
+    CategoriesLoaded event,
+    Emitter<RaceRegistrationState> emit,
+  ) {
+    final cats = event.categories.map((c) {
+      if (c is EventCategory) return c;
+      return EventCategory.fromJson(c as Map<String, dynamic>);
+    }).toList();
+
+    emit(state.copyWith(categories: cats, isCategoriesLoading: false));
   }
 
   FutureOr<void> _onSubmitPressed(
