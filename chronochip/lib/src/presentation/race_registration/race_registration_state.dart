@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:chronochip/src/core/models/gender_response.dart';
 import 'package:chronochip/src/core/models/runner_response.dart';
 import 'package:chronochip/src/core/models/event_category.dart';
+import 'package:chronochip/src/core/models/tshirt_size.dart';
 
 class RaceRegistrationState extends Equatable {
   final bool isConfirmed;
@@ -11,6 +12,7 @@ class RaceRegistrationState extends Equatable {
   final List<Gender> genders;
   final List<Runner> runners;
   final List<EventCategory> categories;
+  final List<TShirtSize> tshirtSizes;
   final bool isCategoriesLoading;
 
   const RaceRegistrationState({
@@ -21,6 +23,7 @@ class RaceRegistrationState extends Equatable {
     this.genders = const [],
     this.runners = const [],
     this.categories = const [],
+    this.tshirtSizes = const [],
     this.isCategoriesLoading = false,
   });
 
@@ -42,6 +45,7 @@ class RaceRegistrationState extends Equatable {
     List<Gender>? genders,
     List<Runner>? runners,
     List<EventCategory>? categories,
+    List<TShirtSize>? tshirtSizes,
     bool? isCategoriesLoading,
   }) {
     return RaceRegistrationState(
@@ -52,6 +56,7 @@ class RaceRegistrationState extends Equatable {
       genders: genders ?? this.genders,
       runners: runners ?? this.runners,
       categories: categories ?? this.categories,
+      tshirtSizes: tshirtSizes ?? this.tshirtSizes,
       isCategoriesLoading: isCategoriesLoading ?? this.isCategoriesLoading,
     );
   }
@@ -65,6 +70,7 @@ class RaceRegistrationState extends Equatable {
     genders,
     runners,
     categories,
+    tshirtSizes,
     isCategoriesLoading,
   ];
 }

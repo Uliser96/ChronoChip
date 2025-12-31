@@ -70,6 +70,36 @@ class ApiClient {
         headers: headers,
         body: body != null ? jsonEncode(body) : null,
       );
+      // handle temporary redirect (307) by following 'location' header once
+      if (response.statusCode == 307) {
+        final location = response.headers['location'];
+        LoggerUtil.logError(
+          method: 'POST',
+          url: url,
+          error: 'HTTP 307, location: $location',
+        );
+        if (location != null && location.isNotEmpty) {
+          // build redirect url (absolute or relative)
+          final redirectUrl = location.startsWith('http')
+              ? location
+              : (baseUrl +
+                    (location.startsWith('/')
+                        ? location.substring(1)
+                        : location));
+          LoggerUtil.logRequest(
+            method: 'POST (redirect)',
+            url: redirectUrl,
+            body: body,
+          );
+          final redirectResp = await _httpClient.post(
+            Uri.parse(redirectUrl),
+            headers: headers,
+            body: body != null ? jsonEncode(body) : null,
+          );
+          return _handleResponse(redirectResp, 'POST', redirectUrl);
+        }
+      }
+
       return _handleResponse(response, 'POST', url);
     } catch (e, stackTrace) {
       LoggerUtil.logError(

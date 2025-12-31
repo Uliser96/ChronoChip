@@ -164,7 +164,26 @@ class _EventDetailPageState extends State<EventDetailPage> {
                               ? Colors.grey.shade800
                               : AppColors.primary,
                           textColor: Colors.white,
-                          onPressed: _event!.finished ? null : () {},
+                          onPressed: _event!.finished
+                              ? null
+                              : () {
+                                  final info = EventDetailInfo(
+                                    id: _event!.id,
+                                    name: _event!.name,
+                                    date: _event!.date,
+                                    location: _event!.location,
+                                    registrationStartDate:
+                                        _event!.registrationStartDate,
+                                    registrationEndDate:
+                                        _event!.registrationEndDate,
+                                    finished: _event!.finished,
+                                  );
+                                  Navigator.pushNamed(
+                                    context,
+                                    Routers.raceRegistration,
+                                    arguments: info,
+                                  );
+                                },
                         ),
                         const SizedBox(height: 12),
                         _LargePillButton(

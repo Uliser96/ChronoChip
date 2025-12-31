@@ -2,6 +2,7 @@ import 'package:chronochip/src/core/models/login_response.dart';
 import 'package:chronochip/src/core/models/gender_response.dart';
 import 'package:chronochip/src/core/models/runner_response.dart';
 import 'package:chronochip/src/core/models/event_category.dart';
+import 'package:chronochip/src/core/models/tshirt_size.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 import '../../models/register_response.dart';
@@ -161,6 +162,59 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw Exception('Error al obtener categorías: $e');
+    }
+  }
+
+  /// Obtiene las tallas de jersey (tshirt sizes)
+  Future<List<TShirtSize>> getTshirtSizes() async {
+    try {
+      final response = await _apiClient.get('api/tshirt-sizes');
+
+      // expected: { message: 'Success', data: { rows: [ {...} ], paginator: {...} } }
+      final map = response as Map<String, dynamic>;
+      final data = map['data'] as Map<String, dynamic>?;
+      final rows = data?['rows'] as List<dynamic>? ?? [];
+      return rows
+          .map((e) => TShirtSize.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al obtener tallas de jersey: $e');
+    }
+  }
+
+  /// Envía la inscripción a la carrera
+  Future<Map<String, dynamic>> submitRaceRegistration({
+    required int runnerId,
+    required String firstName,
+    required String lastName,
+    required String birthdate,
+    required int genderId,
+    required String teamName,
+    required int eventCategoryId,
+    required int tshirtSize,
+  }) async {
+    try {
+      final payload = {
+        'runnerId': runnerId,
+        'firstName': firstName,
+        'lastName': lastName,
+        'birthdate': birthdate,
+        'genderId': genderId,
+        'teamName': teamName,
+        'eventCategoryId': eventCategoryId,
+        'tshirtSize': tshirtSize,
+      };
+
+      final response = await _apiClient.post(
+        'api/race-registration',
+        body: payload,
+      );
+
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al enviar inscripción: $e');
     }
   }
 }

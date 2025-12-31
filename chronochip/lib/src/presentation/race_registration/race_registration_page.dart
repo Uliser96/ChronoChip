@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chronochip/src/shared/theme/app_colors.dart';
 import 'package:chronochip/src/core/models/gender_response.dart';
+import 'package:chronochip/src/core/models/event_category.dart';
+import 'package:chronochip/src/core/models/tshirt_size.dart';
 import 'race_registration_bloc.dart';
 import 'race_registration_event.dart';
 import 'race_registration_state.dart';
+import 'package:chronochip/src/core/routers/routers.dart';
 
 class RaceRegistrationPage extends StatefulWidget {
   final int eventId;
@@ -73,14 +76,7 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
                           child: BlocListener<RaceRegistrationBloc, RaceRegistrationState>(
                             listener: (context, state) {
                               if (state.isSuccess) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Registro listo. Procede al pago.',
-                                    ),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
+                                Navigator.pushNamed(context, Routers.payment);
                               } else if (state.error != null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -667,52 +663,65 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
                                         ),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: DropdownButton<String>(
-                                        isExpanded: true,
-                                        underline: const SizedBox.shrink(),
-                                        hint: const Text(
-                                          'Jersey conmemorativo',
-                                          style: TextStyle(
-                                            color: Colors.white70,
-                                          ),
-                                        ),
-                                        value: _selectedJersey,
-                                        items: _jerseyOptions.map((j) {
-                                          return DropdownMenuItem<String>(
-                                            value: j,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 14,
-                                                    vertical: 12,
+                                      child:
+                                          BlocBuilder<
+                                            RaceRegistrationBloc,
+                                            RaceRegistrationState
+                                          >(
+                                            builder: (context, state) {
+                                              final sizes = state.tshirtSizes;
+                                              return DropdownButton<String>(
+                                                isExpanded: true,
+                                                underline:
+                                                    const SizedBox.shrink(),
+                                                hint: const Text(
+                                                  'Jersey conmemorativo',
+                                                  style: TextStyle(
+                                                    color: Colors.white70,
                                                   ),
-                                              child: Text(
-                                                j,
+                                                ),
+                                                value: _selectedJersey,
+                                                items: sizes.map((t) {
+                                                  return DropdownMenuItem<
+                                                    String
+                                                  >(
+                                                    value: t.description,
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 14,
+                                                            vertical: 12,
+                                                          ),
+                                                      child: Text(
+                                                        t.description,
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 16,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                                onChanged: sizes.isEmpty
+                                                    ? null
+                                                    : (val) {
+                                                        setState(() {
+                                                          _selectedJersey = val;
+                                                        });
+                                                      },
                                                 style: const TextStyle(
                                                   color: Colors.white,
-                                                  fontSize: 16,
                                                 ),
-                                              ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                        onChanged: _jerseyOptions.isEmpty
-                                            ? null
-                                            : (val) {
-                                                setState(() {
-                                                  _selectedJersey = val;
-                                                });
-                                              },
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                        dropdownColor: const Color.fromRGBO(
-                                          241,
-                                          136,
-                                          0,
-                                          0.9,
-                                        ),
-                                      ),
+                                                dropdownColor:
+                                                    const Color.fromRGBO(
+                                                      241,
+                                                      136,
+                                                      0,
+                                                      0.9,
+                                                    ),
+                                              );
+                                            },
+                                          ),
                                     ),
 
                                     const SizedBox(height: 12),
@@ -729,13 +738,36 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
                                           children: [
                                             GestureDetector(
                                               onTap: () {
+                                                // dispatch validation + toggle to bloc
                                                 context
                                                     .read<
                                                       RaceRegistrationBloc
                                                     >()
                                                     .add(
-                                                      ConfirmToggled(
-                                                        !state.isConfirmed,
+                                                      ValidateAndToggleConfirm(
+                                                        desiredConfirmed:
+                                                            !state.isConfirmed,
+                                                        runnerId:
+                                                            _selectedRunnerId,
+                                                        name: _nameController
+                                                            .text,
+                                                        surname:
+                                                            _surnameController
+                                                                .text,
+                                                        genderId:
+                                                            _selectedSex?.id,
+                                                        birthdate:
+                                                            _dobController.text,
+                                                        team:
+                                                            _teamController
+                                                                .text
+                                                                .isEmpty
+                                                            ? null
+                                                            : _teamController
+                                                                  .text,
+                                                        category:
+                                                            _selectedCategory,
+                                                        jersey: _selectedJersey,
                                                       ),
                                                     );
                                               },
@@ -793,12 +825,85 @@ class _RaceRegistrationPageState extends State<RaceRegistrationPage> {
                                         return ElevatedButton(
                                           onPressed: isEnabled
                                               ? () {
+                                                  // prepare payload values
+                                                  final runnerId =
+                                                      _selectedRunnerId ?? 0;
+                                                  final firstName =
+                                                      _nameController.text;
+                                                  final lastName =
+                                                      _surnameController.text;
+                                                  final birthdate =
+                                                      _dobController.text;
+                                                  final genderId =
+                                                      _selectedSex!.id;
+                                                  final teamName =
+                                                      _teamController.text;
+
+                                                  // resolve selected category id
+                                                  final selectedCategoryId = state
+                                                      .categories
+                                                      .firstWhere(
+                                                        (c) =>
+                                                            c.displayName ==
+                                                            _selectedCategory,
+                                                        orElse: () =>
+                                                            state
+                                                                .categories
+                                                                .isNotEmpty
+                                                            ? state
+                                                                  .categories
+                                                                  .first
+                                                            : EventCategory(
+                                                                id: 0,
+                                                                eventCategoryId:
+                                                                    0,
+                                                                categoryName:
+                                                                    '',
+                                                                divisionName:
+                                                                    '',
+                                                                displayName: '',
+                                                                distanceKm: 0,
+                                                                minAge: 0,
+                                                                maxAge: 0,
+                                                                genderId: 0,
+                                                              ),
+                                                      )
+                                                      .eventCategoryId;
+
+                                                  // resolve tshirt size id
+                                                  final tshirtSizeId = state
+                                                      .tshirtSizes
+                                                      .firstWhere(
+                                                        (t) =>
+                                                            t.description ==
+                                                            _selectedJersey,
+                                                        orElse: () =>
+                                                            TShirtSize(
+                                                              id: 0,
+                                                              sizeEs: '',
+                                                              sizeEn: '',
+                                                              description: '',
+                                                            ),
+                                                      )
+                                                      .id;
+
                                                   context
                                                       .read<
                                                         RaceRegistrationBloc
                                                       >()
                                                       .add(
-                                                        const SubmitRegistrationPressed(),
+                                                        SubmitRegistrationPressed(
+                                                          runnerId: runnerId,
+                                                          firstName: firstName,
+                                                          lastName: lastName,
+                                                          birthdate: birthdate,
+                                                          genderId: genderId,
+                                                          teamName: teamName,
+                                                          eventCategoryId:
+                                                              selectedCategoryId,
+                                                          tshirtSize:
+                                                              tshirtSizeId,
+                                                        ),
                                                       );
                                                 }
                                               : null,
