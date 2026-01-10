@@ -183,6 +183,23 @@ class ApiService {
     }
   }
 
+  /// Obtiene el perfil del corredor
+  Future<Map<String, dynamic>> getRunnerProfile() async {
+    // Debug log to verify the method is called
+    // ignore: avoid_print
+    print('ApiService.getRunnerProfile: called');
+    try {
+      final response = await _apiClient.get('api/runner-profile');
+      // Debug log the raw response
+      // ignore: avoid_print
+      print('ApiService.getRunnerProfile: response => $response');
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al obtener perfil: $e');
+    }
+  }
+
   /// Envía la inscripción a la carrera
   Future<Map<String, dynamic>> submitRaceRegistration({
     required int runnerId,
