@@ -24,7 +24,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       // ignore: avoid_print
       print('ProfileBloc: getRunnerProfile resp => $resp');
       final data = resp['data'] as Map<String, dynamic>? ?? {};
-
+      final fullName = (data['fullName']?.toString() ?? '-');
+      final profileImageUrl = data['profileImageUrl']?.toString();
       final favoriteDistance = (data['favoriteDistance']?.toString() ?? '-');
       final bestPaceTime = (data['bestPaceTime']?.toString() ?? '-');
       final yearlyKm = data['yearlyKm'] != null
@@ -36,6 +37,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       emit(
         ProfileLoaded(
+          fullName: fullName,
+          profileImageUrl: profileImageUrl,
           favoriteDistance: favoriteDistance,
           bestPaceTime: bestPaceTime,
           yearlyKm: yearlyKm,

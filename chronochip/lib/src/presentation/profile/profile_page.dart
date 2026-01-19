@@ -41,24 +41,56 @@ class ProfilePage extends StatelessWidget {
                               ),
                             ),
                             child: ClipOval(
-                              child: Container(
-                                color: Colors.grey.shade300,
-                                child: const Icon(
-                                  Icons.person,
-                                  size: 80,
-                                  color: Colors.grey,
-                                ),
+                              child: BlocBuilder<ProfileBloc, ProfileState>(
+                                builder: (context, state) {
+                                  final imageUrl = state is ProfileLoaded
+                                      ? state.profileImageUrl
+                                      : null;
+                                  if (imageUrl != null && imageUrl.isNotEmpty) {
+                                    return Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                      width: 140,
+                                      height: 140,
+                                      errorBuilder: (ctx, err, st) => Container(
+                                        color: Colors.grey.shade300,
+                                        child: const Icon(
+                                          Icons.person,
+                                          size: 80,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+                                  return Container(
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(
+                                      Icons.person,
+                                      size: 80,
+                                      color: Colors.grey,
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
-                            'Alex Prado',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
-                            ),
+                          BlocBuilder<ProfileBloc, ProfileState>(
+                            builder: (context, state) {
+                              String fullName = '-';
+                              if (state is ProfileLoaded) {
+                                fullName = state.fullName;
+                              }
+                              return Text(
+                                fullName,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
