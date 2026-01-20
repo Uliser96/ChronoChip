@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:chronochip/src/core/services/api/api_service.dart';
 import 'profile_event.dart';
@@ -8,6 +10,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
   ProfileBloc({required this.apiService}) : super(ProfileInitial()) {
     on<FetchProfile>(_onFetchProfile);
+    on<UploadProfileImage>(_onUploadProfileImage);
   }
 
   Future<void> _onFetchProfile(
@@ -49,6 +52,50 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       // ignore: avoid_print
       print('ProfileBloc: error fetching profile => $e');
       emit(ProfileError(e?.toString() ?? 'Error desconocido'));
+    }
+  }
+
+  Future<void> _onUploadProfileImage(
+    UploadProfileImage event,
+    Emitter<ProfileState> emit,
+  ) async {
+    // ignore: avoid_print
+    print('ProfileBloc: UploadProfileImage received');
+    emit(ProfileLoading());
+    try {
+      final file = File(event.imagePath);
+      final uploadedUrl = await apiService.uploadProfileImage(file);
+
+      // preserve existing values if present
+      String fullName = '-';
+      String favoriteDistance = '-';
+      String bestPaceTime = '-';
+      String yearlyKm = '-';
+      String raceCount = '-';
+
+      final current = state;
+      if (current is ProfileLoaded) {
+        fullName = current.fullName;
+        favoriteDistance = current.favoriteDistance;
+        bestPaceTime = current.bestPaceTime;
+        yearlyKm = current.yearlyKm;
+        raceCount = current.raceCount;
+      }
+
+      emit(
+        ProfileLoaded(
+          fullName: fullName,
+          profileImageUrl: uploadedUrl,
+          favoriteDistance: favoriteDistance,
+          bestPaceTime: bestPaceTime,
+          yearlyKm: yearlyKm,
+          raceCount: raceCount,
+        ),
+      );
+    } catch (e) {
+      // ignore: avoid_print
+      print('ProfileBloc: error uploading profile image => $e');
+      emit(ProfileError(e?.toString() ?? 'Error uploading image'));
     }
   }
 }

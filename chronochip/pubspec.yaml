@@ -50,6 +50,9 @@ dependencies:
   
   # Secure storage for tokens
   flutter_secure_storage: ^8.0.0
+  image_picker: ^0.8.7+5
+  http_parser: ^4.0.0
+  # permission_handler removed due to Android compile issues; image_picker requests permissions itself
 
 dev_dependencies:
   flutter_test:

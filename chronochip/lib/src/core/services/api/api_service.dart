@@ -6,6 +6,11 @@ import 'package:chronochip/src/core/models/tshirt_size.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 import '../../models/register_response.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import '../token_storage.dart';
 
 class ApiService {
   final ApiClient _apiClient;
@@ -197,6 +202,68 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw Exception('Error al obtener perfil: $e');
+    }
+  }
+
+  /// Sube la imagen de perfil (multipart) y retorna la URL recibida
+  Future<String> uploadProfileImage(File file) async {
+    try {
+      final uri = Uri.parse(
+        '${ApiClient.baseUrl}api/runner-profile/profile-image',
+      );
+
+      final token = await TokenStorage.readAccessToken();
+
+      final request = http.MultipartRequest('POST', uri);
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.headers['Accept'] = 'application/json';
+
+      // determine mime type from file extension
+      final lower = file.path.toLowerCase();
+      String mimeType;
+      if (lower.endsWith('.png')) {
+        mimeType = 'image/png';
+      } else if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
+        mimeType = 'image/jpeg';
+      } else {
+        throw ApiException(
+          'Tipo de archivo no permitido. Tipos permitidos: image/jpeg, image/png',
+          statusCode: 400,
+        );
+      }
+
+      final filename = file.uri.pathSegments.isNotEmpty
+          ? file.uri.pathSegments.last
+          : file.path.split(Platform.pathSeparator).last;
+
+      final multipartFile = await http.MultipartFile.fromPath(
+        'file',
+        file.path,
+        filename: filename,
+        contentType: MediaType(mimeType.split('/')[0], mimeType.split('/')[1]),
+      );
+      request.files.add(multipartFile);
+
+      final streamed = await request.send();
+      final resp = await http.Response.fromStream(streamed);
+
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        final map = jsonDecode(resp.body) as Map<String, dynamic>;
+        final data = map['data'] as Map<String, dynamic>?;
+        final url = data != null ? data['profileImageUrl']?.toString() : null;
+        if (url != null && url.isNotEmpty) return url;
+        throw Exception('No profileImageUrl in response');
+      } else {
+        throw ApiException(
+          resp.body.isNotEmpty ? resp.body : 'Upload failed',
+          statusCode: resp.statusCode,
+        );
+      }
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error uploading profile image: $e');
     }
   }
 

@@ -5,6 +5,15 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Force androidx.activity to a version compatible with AGP 8.7.3
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "androidx.activity" && requested.name == "activity") {
+            useVersion("1.10.0")
+        }
+    }
+}
+
 android {
     namespace = "com.example.chronochip"
     compileSdk = flutter.compileSdkVersion

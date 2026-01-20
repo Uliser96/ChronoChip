@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+// permission_handler removed; image_picker will request permissions as needed
 import 'package:chronochip/src/shared/theme/app_colors.dart';
 import 'package:chronochip/src/core/services/api/api_service.dart';
 import 'bloc/profile_bloc.dart';
@@ -8,6 +11,8 @@ import 'bloc/profile_state.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
+
+  // image_picker requests permissions when needed; no explicit permission_handler used
 
   @override
   Widget build(BuildContext context) {
@@ -40,39 +45,65 @@ class ProfilePage extends StatelessWidget {
                                 width: 3,
                               ),
                             ),
-                            child: ClipOval(
-                              child: BlocBuilder<ProfileBloc, ProfileState>(
-                                builder: (context, state) {
-                                  final imageUrl = state is ProfileLoaded
-                                      ? state.profileImageUrl
-                                      : null;
-                                  if (imageUrl != null && imageUrl.isNotEmpty) {
-                                    return Image.network(
-                                      imageUrl,
-                                      fit: BoxFit.cover,
-                                      width: 140,
-                                      height: 140,
-                                      errorBuilder: (ctx, err, st) => Container(
-                                        color: Colors.grey.shade300,
-                                        child: const Icon(
-                                          Icons.person,
-                                          size: 80,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
+                            child: Builder(
+                              builder: (innerContext) {
+                                return GestureDetector(
+                                  onTap: () async {
+                                    // Capture bloc synchronously to avoid Provider lookup after an `await`
+                                    final bloc = BlocProvider.of<ProfileBloc>(
+                                      innerContext,
+                                      listen: false,
                                     );
-                                  }
+                                    final picker = ImagePicker();
+                                    final xfile = await picker.pickImage(
+                                      source: ImageSource.gallery,
+                                      imageQuality: 80,
+                                    );
+                                    if (xfile != null) {
+                                      bloc.add(UploadProfileImage(xfile.path));
+                                    }
+                                  },
+                                  child: ClipOval(
+                                    child:
+                                        BlocBuilder<ProfileBloc, ProfileState>(
+                                          builder: (context, state) {
+                                            final imageUrl =
+                                                state is ProfileLoaded
+                                                ? state.profileImageUrl
+                                                : null;
+                                            if (imageUrl != null &&
+                                                imageUrl.isNotEmpty) {
+                                              return Image.network(
+                                                imageUrl,
+                                                fit: BoxFit.cover,
+                                                width: 140,
+                                                height: 140,
+                                                errorBuilder: (ctx, err, st) =>
+                                                    Container(
+                                                      color:
+                                                          Colors.grey.shade300,
+                                                      child: const Icon(
+                                                        Icons.person,
+                                                        size: 80,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                              );
+                                            }
 
-                                  return Container(
-                                    color: Colors.grey.shade300,
-                                    child: const Icon(
-                                      Icons.person,
-                                      size: 80,
-                                      color: Colors.grey,
-                                    ),
-                                  );
-                                },
-                              ),
+                                            return Container(
+                                              color: Colors.grey.shade300,
+                                              child: const Icon(
+                                                Icons.person,
+                                                size: 80,
+                                                color: Colors.grey,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                           const SizedBox(height: 16),
