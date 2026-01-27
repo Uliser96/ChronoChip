@@ -6,7 +6,7 @@ import 'package:chronochip/src/core/services/token_storage.dart';
 import 'package:chronochip/src/core/models/login_response.dart';
 
 class ApiClient {
-  static const String baseUrl = 'https://api.crono.stackcloud.com.mx/';
+  static const String baseUrl = 'https://api.cronochip.com.mx/';
 
   final http.Client _httpClient;
 
