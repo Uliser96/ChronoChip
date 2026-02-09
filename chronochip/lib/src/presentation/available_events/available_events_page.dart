@@ -190,6 +190,7 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
               title: e.name,
               date: e.date,
               location: e.location,
+              imageUrl: e.coverImageUrl,
             );
           },
         );
@@ -202,6 +203,7 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
     required String title,
     required String date,
     required String location,
+    String? imageUrl,
   }) {
     return InkWell(
       onTap: () {
@@ -233,7 +235,34 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
                   color: Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.image, color: Colors.grey.shade600, size: 40),
+                child: (imageUrl != null && imageUrl.isNotEmpty)
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          imageUrl,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.image,
+                            color: Colors.grey.shade600,
+                            size: 40,
+                          ),
+                          loadingBuilder: (_, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : Icon(Icons.image, color: Colors.grey.shade600, size: 40),
               ),
               const SizedBox(width: 16),
               Expanded(
