@@ -4,57 +4,18 @@ import 'bloc/event_detail_info_bloc.dart';
 import 'bloc/event_detail_info_event.dart';
 import 'bloc/event_detail_info_state.dart';
 import 'package:chronochip/src/core/routers/routers.dart';
-
-class EventDetailInfo {
-  final int id;
-  final String name;
-  final String date;
-  final String location;
-  final String registrationStartDate;
-  final String registrationEndDate;
-  final bool finished;
-  final Map<String, dynamic>? event; // nested event object from API
-
-  EventDetailInfo({
-    required this.id,
-    required this.name,
-    required this.date,
-    required this.location,
-    required this.registrationStartDate,
-    required this.registrationEndDate,
-    required this.finished,
-    this.event,
-  });
-
-  String get formattedDate {
-    if (date.contains('T')) return date.split('T').first;
-    return date;
-  }
-
-  String get registrationRange {
-    if (registrationStartDate.isEmpty || registrationEndDate.isEmpty)
-      return 'N/A';
-    final from = registrationStartDate.contains('T')
-        ? registrationStartDate.split('T').first
-        : registrationStartDate;
-    final to = registrationEndDate.contains('T')
-        ? registrationEndDate.split('T').first
-        : registrationEndDate;
-    return '$from - $to';
-  }
-}
+import 'document_webview_modal.dart';
 
 class EventDetailInfoPage extends StatelessWidget {
-  final EventDetailInfo event;
+  final int eventId;
 
-  const EventDetailInfoPage({Key? key, required this.event}) : super(key: key);
+  const EventDetailInfoPage({super.key, required this.eventId});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return BlocProvider(
-      create: (_) =>
-          EventDetailInfoBloc(initial: EventDetailInfoState(event: event)),
+      create: (_) => EventDetailInfoBloc(eventId: eventId),
       child: Builder(
         builder: (context) {
           return Scaffold(
@@ -80,6 +41,48 @@ class EventDetailInfoPage extends StatelessWidget {
                 child: BlocBuilder<EventDetailInfoBloc, EventDetailInfoState>(
                   builder: (context, state) {
                     final bloc = context.read<EventDetailInfoBloc>();
+                    final data = state.eventResponse?.data;
+
+                    if (state.isRefreshing && data == null) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    }
+
+                    if (state.error != null && data == null) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24.0),
+                          child: Column(
+                            children: [
+                              Text('Error: ${state.error}'),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                onPressed: () =>
+                                    bloc.add(EventDetailInfoRefreshRequested()),
+                                child: const Text('Reintentar'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    final eventName = data?.name ?? 'Título del evento';
+                    final eventDate = data?.date ?? '';
+                    final kitPickup =
+                        data?.eventInformation?.kitPickupInfo ?? '';
+                    final eventLocation = data?.location ?? '';
+                    final registrationRange =
+                        (data?.registrationStartDate == null ||
+                            data?.registrationEndDate == null)
+                        ? ''
+                        : '${data!.registrationStartDate} - ${data.registrationEndDate}';
+                    final documents = data?.documents ?? [];
+
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -91,11 +94,13 @@ class EventDetailInfoPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         _InfoCard(
                           header: 'SALIDA 1',
-                          primaryText: state.event.formattedDate,
-                          secondaryText: '',
+                          primaryText: eventDate.contains('T')
+                              ? eventDate.split('T').first
+                              : eventDate,
+                          secondaryText: eventLocation,
                         ),
                         const SizedBox(height: 8),
-                        Text(state.event.location),
+                        Text(eventLocation),
                         const SizedBox(height: 18),
 
                         const Text(
@@ -105,7 +110,7 @@ class EventDetailInfoPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         _InfoCard(
                           header: 'Registro',
-                          primaryText: state.event.registrationRange,
+                          primaryText: registrationRange,
                           secondaryText: '',
                         ),
                         const SizedBox(height: 12),
@@ -123,10 +128,8 @@ class EventDetailInfoPage extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 6),
-                                  Text(
-                                    'Fecha: ${state.event.registrationStartDate}',
-                                  ),
-                                  Text('Lugar: ${state.event.location}'),
+                                  Text(kitPickup),
+                                  Text(""),
                                 ],
                               ),
                             ),
@@ -141,21 +144,69 @@ class EventDetailInfoPage extends StatelessWidget {
                         const SizedBox(height: 18),
                         const Divider(),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Reglamento',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 8),
-                        GestureDetector(
-                          onTap: () {},
-                          child: Text(
-                            'www.5khollywoodchallenge.mx',
-                            style: TextStyle(
-                              color: theme.primaryColor,
-                              decoration: TextDecoration.underline,
-                            ),
+                        if (documents.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Reglamento',
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: documents.map((doc) {
+                              final docType = doc.documentType ?? '';
+                              return InkWell(
+                                onTap: () {
+                                  final url = doc.documentUrl;
+                                  if (url == null || url.isEmpty) return;
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (_) => SizedBox(
+                                      height: MediaQuery.of(context).size.height * 0.95,
+                                      child: DocumentWebViewModal(url: url),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 4,
+                                        offset: Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          docType,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      const Icon(Icons.open_in_new, size: 18),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+
                         const SizedBox(height: 90),
                       ],
                     );
@@ -181,7 +232,7 @@ class EventDetailInfoPage extends StatelessWidget {
                                 Navigator.pushNamed(
                                   context,
                                   Routers.raceRegistration,
-                                  arguments: state.event,
+                                  arguments: eventId,
                                 );
                               },
                         style: ElevatedButton.styleFrom(

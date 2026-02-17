@@ -70,14 +70,24 @@ class Data {
     return 'Data(name: $name, date: $date, location: $location, runnerNumberStart: $runnerNumberStart, finished: $finished, ageCalculationMethod: $ageCalculationMethod, maxParticipants: $maxParticipants, registrationStartDate: $registrationStartDate, registrationEndDate: $registrationEndDate, allowTshirtSize: $allowTshirtSize, privateEvent: $privateEvent, publishedAt: $publishedAt, coverImgPath: $coverImgPath, resultsStatus: $resultsStatus, preliminaryResultsPublishedAt: $preliminaryResultsPublishedAt, finalResultsPublishedAt: $finalResultsPublishedAt, id: $id, createdAt: $createdAt, updatedAt: $updatedAt, eventModalityCategories: $eventModalityCategories, pricingStages: $pricingStages, physicalFolioBlocks: $physicalFolioBlocks, eventInformation: $eventInformation, eventTshirtSizes: $eventTshirtSizes, documents: $documents, coverImageUrl: $coverImageUrl, hasGenderSpecificSizes: $hasGenderSpecificSizes)';
   }
 
+  // Helper to safely parse integers coming as int, double or string
+  static int? _toInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v);
+    return null;
+  }
+
   factory Data.fromMap(Map<String, dynamic> data) => Data(
     name: data['name'] as String?,
     date: data['date'] as String?,
     location: data['location'] as String?,
-    runnerNumberStart: data['runnerNumberStart'] as int?,
+    runnerNumberStart: _toInt(data['runnerNumberStart']),
     finished: data['finished'] as bool?,
     ageCalculationMethod: data['ageCalculationMethod'] as String?,
-    maxParticipants: data['maxParticipants'] as int?,
+    maxParticipants: _toInt(data['maxParticipants']),
     registrationStartDate: data['registrationStartDate'] as String?,
     registrationEndDate: data['registrationEndDate'] as String?,
     allowTshirtSize: data['allowTshirtSize'] as bool?,
@@ -88,7 +98,7 @@ class Data {
     preliminaryResultsPublishedAt:
         data['preliminaryResultsPublishedAt'] as dynamic,
     finalResultsPublishedAt: data['finalResultsPublishedAt'] as dynamic,
-    id: data['id'] as int?,
+    id: _toInt(data['id']),
     createdAt: data['createdAt'] == null
         ? null
         : DateTime.parse(data['createdAt'] as String),

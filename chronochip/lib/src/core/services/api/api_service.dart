@@ -4,6 +4,7 @@ import 'package:chronochip/src/core/models/runner_response.dart';
 import 'package:chronochip/src/core/models/event_category.dart';
 import 'package:chronochip/src/core/models/tshirt_size.dart';
 import 'package:chronochip/src/core/models/get_events_list_response/get_events_list_response.dart';
+import 'package:chronochip/src/core/models/get_event_by_id_response/get_event_by_id_response.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 import '../../models/register_response.dart';
@@ -150,6 +151,17 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw Exception('Error al obtener corredores: $e');
+    }
+  }
+
+  /// Obtiene los detalles de un evento por id
+  Future<GetEventByIdResponse> getEventById({required int eventId}) async {
+    try {
+      final response = await _apiClient.get('api/events/$eventId');
+      return GetEventByIdResponse.fromMap(response as Map<String, dynamic>);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al obtener evento por id: $e');
     }
   }
 

@@ -13,11 +13,20 @@ class PricingStage {
     return 'PricingStage(id: $id, startDate: $startDate, endDate: $endDate, price: $price)';
   }
 
+  static int? _toInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v);
+    return null;
+  }
+
   factory PricingStage.fromMap(Map<String, dynamic> data) => PricingStage(
-    id: data['id'] as int?,
+    id: _toInt(data['id']),
     startDate: data['startDate'] as String?,
     endDate: data['endDate'] as String?,
-    price: data['price'] as int?,
+    price: _toInt(data['price']),
   );
 
   Map<String, dynamic> toMap() => {

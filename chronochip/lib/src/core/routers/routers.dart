@@ -38,24 +38,18 @@ class Routers {
     home: (context) => const HomePage(),
     eventDetailInfo: (context) {
       final args = ModalRoute.of(context)?.settings.arguments;
-      if (args is EventDetailInfo) {
-        return EventDetailInfoPage(event: args);
+      if (args is int) {
+        return EventDetailInfoPage(eventId: args);
       }
-      final fallback = EventDetailInfo(
-        id: 0,
-        name: '',
-        date: '',
-        location: '',
-        registrationStartDate: '',
-        registrationEndDate: '',
-        finished: false,
-      );
-      return EventDetailInfoPage(event: fallback);
+      return const EventDetailInfoPage(eventId: 0);
     },
     raceRegistration: (context) {
       final args = ModalRoute.of(context)?.settings.arguments;
-      if (args is EventDetailInfo) {
-        return RaceRegistrationPage(eventId: args.id, event: args.event);
+      if (args is int) {
+        return RaceRegistrationPage(eventId: args, event: null);
+      }
+      if (args is Map<String, dynamic>) {
+        return RaceRegistrationPage(eventId: args['id'] ?? 0, event: args);
       }
       return const RaceRegistrationPage(eventId: 0, event: null);
     },

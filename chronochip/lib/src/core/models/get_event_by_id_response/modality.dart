@@ -9,8 +9,17 @@ class Modality {
   @override
   String toString() => 'Modality(id: $id, name: $name)';
 
+  static int? _toInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v);
+    return null;
+  }
+
   factory Modality.fromMap(Map<String, dynamic> data) =>
-      Modality(id: data['id'] as int?, name: data['name'] as String?);
+      Modality(id: _toInt(data['id']), name: data['name'] as String?);
 
   Map<String, dynamic> toMap() => {'id': id, 'name': name};
 

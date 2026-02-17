@@ -79,29 +79,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             label: 'Información',
                             icon: Icons.info_outline,
                             expanded: false,
-                            // navigate using named route and pass event info
+                            // navigate using named route and pass only event id
                             onPressed: () {
-                              if (selected == null) {
-                                Navigator.pushNamed(
-                                  context,
-                                  Routers.eventDetailInfo,
-                                );
-                                return;
-                              }
-                              final info = EventDetailInfo(
-                                id: selected!.id ?? 0,
-                                name: selected!.name ?? '',
-                                date: selected!.date ?? '',
-                                location: selected!.location ?? '',
-                                registrationStartDate: '',
-                                registrationEndDate: '',
-                                finished: selected!.finished ?? false,
-                                event: selected!.toMap(),
-                              );
+                              final id = selected?.id ?? 0;
                               Navigator.pushNamed(
                                 context,
                                 Routers.eventDetailInfo,
-                                arguments: info,
+                                arguments: id,
                               );
                             },
                           ),
@@ -140,9 +124,11 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         onPressed: isFinished
                             ? null
                             : () {
+                                final id = selected?.id ?? 0;
                                 Navigator.pushNamed(
                                   context,
                                   Routers.raceRegistration,
+                                  arguments: id,
                                 );
                               },
                       ),

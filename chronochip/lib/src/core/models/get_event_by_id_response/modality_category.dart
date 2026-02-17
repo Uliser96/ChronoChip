@@ -15,9 +15,18 @@ class ModalityCategory {
     return 'ModalityCategory(id: $id, modality: $modality, category: $category)';
   }
 
+  static int? _toInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v);
+    return null;
+  }
+
   factory ModalityCategory.fromMap(Map<String, dynamic> data) {
     return ModalityCategory(
-      id: data['id'] as int?,
+      id: _toInt(data['id']),
       modality: data['modality'] == null
           ? null
           : Modality.fromMap(data['modality'] as Map<String, dynamic>),

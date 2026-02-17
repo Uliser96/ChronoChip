@@ -20,8 +20,17 @@ class Document {
     return 'Document(id: $id, documentType: $documentType, filePath: $filePath, isMandatory: $isMandatory, documentUrl: $documentUrl)';
   }
 
+  static int? _toInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v);
+    return null;
+  }
+
   factory Document.fromMap(Map<String, dynamic> data) => Document(
-    id: data['id'] as int?,
+    id: _toInt(data['id']),
     documentType: data['documentType'] as String?,
     filePath: data['filePath'] as String?,
     isMandatory: data['isMandatory'] as bool?,
