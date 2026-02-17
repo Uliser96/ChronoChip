@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../available_event.dart';
+import 'package:chronochip/src/core/models/get_events_list_response/get_events_list_response.dart';
 
 abstract class AvailableEventsState extends Equatable {
   const AvailableEventsState();
@@ -18,11 +19,12 @@ class AvailableEventsLoading extends AvailableEventsState {
 
 class AvailableEventsSuccess extends AvailableEventsState {
   final List<AvailableEvent> events;
+  final GetEventsListResponse response;
 
-  const AvailableEventsSuccess({required this.events});
+  const AvailableEventsSuccess({required this.events, required this.response});
 
   @override
-  List<Object?> get props => [events];
+  List<Object?> get props => [events, response];
 }
 
 class AvailableEventsFailure extends AvailableEventsState {

@@ -1,17 +1,17 @@
 import 'package:bloc/bloc.dart';
-import 'available_events_event.dart';
-import 'available_events_state.dart';
-import 'package:chronochip/src/core/services/api/api_client.dart';
+import 'package:chronochip/src/core/services/api/api_service.dart';
+import 'package:chronochip/src/core/models/get_events_list_response/get_events_list_response.dart';
 import 'package:chronochip/src/core/services/api/api_exception.dart';
 import '../available_event.dart';
-import 'package:chronochip/src/core/utils/logger_util.dart';
+import 'available_events_event.dart';
+import 'available_events_state.dart';
 
 class AvailableEventsBloc
     extends Bloc<AvailableEventsEvent, AvailableEventsState> {
-  final ApiClient _apiClient;
+  final ApiService _apiService;
 
-  AvailableEventsBloc({ApiClient? apiClient})
-    : _apiClient = apiClient ?? ApiClient(),
+  AvailableEventsBloc({ApiService? apiService})
+    : _apiService = apiService ?? ApiService(),
       super(const AvailableEventsInitial()) {
     on<AvailableEventsFetch>(_onFetch);
     on<AvailableEventsReset>(
@@ -26,36 +26,27 @@ class AvailableEventsBloc
     emit(const AvailableEventsLoading());
 
     try {
-      LoggerUtil.logRequest(method: 'GET', url: 'api/events', body: null);
-      final body = await _apiClient.get('api/events');
-
-      final rows = body?['data']?['rows'] as List<dynamic>? ?? [];
+      final response = await _apiService.getEventsList();
+      final rows = response.data?.rows ?? [];
       final events = rows
-          .map((e) => AvailableEvent.fromJson(e as Map<String, dynamic>))
+          .map(
+            (row) => AvailableEvent(
+              id: row.id ?? 0,
+              name: row.name ?? '',
+              date: row.date ?? '',
+              location: row.location ?? '',
+              coverImageUrl: row.coverImageUrl,
+            ),
+          )
           .toList();
 
-      LoggerUtil.logResponse(
-        method: 'GET',
-        url: 'api/events',
-        statusCode: 200,
-        response: body?.toString() ?? '',
-      );
-
-      emit(AvailableEventsSuccess(events: events));
+      // Keep the full response available in the success state
+      final GetEventsListResponse fullResponse = response;
+      emit(AvailableEventsSuccess(events: events, response: fullResponse));
     } on ApiException catch (e) {
       final errorMessage = e.statusCode == 401 ? 'No autorizado' : e.message;
-      LoggerUtil.logError(
-        method: 'GET',
-        url: 'api/events',
-        error: errorMessage,
-      );
       emit(AvailableEventsFailure(error: errorMessage));
     } catch (e) {
-      LoggerUtil.logError(
-        method: 'GET',
-        url: 'api/events',
-        error: e.toString(),
-      );
       emit(AvailableEventsFailure(error: 'Error al cargar eventos: $e'));
     }
   }

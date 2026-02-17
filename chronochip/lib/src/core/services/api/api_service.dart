@@ -3,6 +3,7 @@ import 'package:chronochip/src/core/models/gender_response.dart';
 import 'package:chronochip/src/core/models/runner_response.dart';
 import 'package:chronochip/src/core/models/event_category.dart';
 import 'package:chronochip/src/core/models/tshirt_size.dart';
+import 'package:chronochip/src/core/models/get_events_list_response/get_events_list_response.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 import '../../models/register_response.dart';
@@ -16,6 +17,17 @@ class ApiService {
   final ApiClient _apiClient;
 
   ApiService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+
+  /// Obtiene la lista de eventos disponibles
+  Future<GetEventsListResponse> getEventsList() async {
+    try {
+      final response = await _apiClient.get('api/events');
+      return GetEventsListResponse.fromMap(response as Map<String, dynamic>);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al obtener eventos: $e');
+    }
+  }
 
   /// Realiza la solicitud de login
   Future<LoginResponse> login({

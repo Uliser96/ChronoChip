@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chronochip/src/shared/theme/app_colors.dart';
 import 'package:chronochip/src/presentation/event_detail/event_detail.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:chronochip/src/core/models/get_events_list_response/get_events_list_response.dart';
+import 'available_event.dart';
 import 'bloc/available_events_bloc.dart';
 import 'bloc/available_events_event.dart';
 import 'bloc/available_events_state.dart';
-import 'available_event.dart';
 
 class AvailableEventsPage extends StatefulWidget {
   const AvailableEventsPage({super.key});
@@ -28,13 +29,12 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
     return state is AvailableEventsSuccess ? state.events : <AvailableEvent>[];
   }
 
-  // Uses ApiClient.baseUrl defined in ApiClient
-
   @override
   void initState() {
     super.initState();
     _bloc = AvailableEventsBloc();
     _bloc.add(const AvailableEventsFetch());
+    _filtered = _sourceEvents();
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -48,7 +48,6 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
 
   void _onSearchChanged() {
     final q = _searchController.text.toLowerCase();
-    final state = _bloc.state;
     final source = _sourceEvents();
     setState(() {
       if (q.isEmpty) {
@@ -95,69 +94,69 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
       value: _bloc,
       child: Scaffold(
         body: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset('assets/imgs/main_background.png', fit: BoxFit.cover),
-            SafeArea(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 24,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '¡Es momento de elegir',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontStyle: FontStyle.italic,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const Text(
-                          'tu próximo reto!',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText: 'Buscar',
-                            prefixIcon: const Icon(Icons.search),
-                            filled: true,
-                            fillColor: Colors.grey.shade300,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+        fit: StackFit.expand,
+        children: [
+          Image.asset('assets/imgs/main_background.png', fit: BoxFit.cover),
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 24,
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: _buildBody(),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '¡Es momento de elegir',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontStyle: FontStyle.italic,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const Text(
+                        'tu próximo reto!',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Buscar',
+                          prefixIcon: const Icon(Icons.search),
+                          filled: true,
+                          fillColor: Colors.grey.shade300,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: _buildBody(),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+    ),
     );
   }
 
@@ -191,6 +190,20 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
               date: e.date,
               location: e.location,
               imageUrl: e.coverImageUrl,
+              onTap: () {
+                final state = _bloc.state;
+                if (state is AvailableEventsSuccess) {
+                  final GetEventsListResponse resp = state.response;
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => EventDetailPage(
+                        eventId: e.id,
+                        eventsResponse: resp,
+                      ),
+                    ),
+                  );
+                }
+              },
             );
           },
         );
@@ -204,12 +217,13 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
     required String date,
     required String location,
     String? imageUrl,
+    VoidCallback? onTap,
   }) {
     return InkWell(
-      onTap: () {
+      onTap: onTap ?? () {
         Navigator.of(
           context,
-        ).push(MaterialPageRoute(builder: (_) => EventDetailPage(eventId: id)));
+        ).push(MaterialPageRoute(builder: (_) => EventDetailPage(eventId: id, eventsResponse: GetEventsListResponse())));
       },
       child: Container(
         decoration: BoxDecoration(

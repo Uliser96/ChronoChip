@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:chronochip/src/shared/theme/app_colors.dart';
 import 'package:chronochip/src/core/routers/routers.dart';
 import 'package:chronochip/src/presentation/event_detail_info/event_detail_info_page.dart';
+import 'package:chronochip/src/core/models/get_events_list_response/get_events_list_response.dart';
 // API calls removed from this screen per requirements
 
 class EventDetailPage extends StatefulWidget {
   final int eventId;
+  final GetEventsListResponse eventsResponse;
 
-  const EventDetailPage({super.key, required this.eventId});
+  const EventDetailPage({
+    super.key,
+    required this.eventId,
+    required this.eventsResponse,
+  });
 
   @override
   State<EventDetailPage> createState() => _EventDetailPageState();
@@ -19,6 +25,15 @@ class _EventDetailPageState extends State<EventDetailPage> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
+    final selected = (() {
+      final rows = widget.eventsResponse.data?.rows;
+      if (rows == null) return null;
+      for (var r in rows) {
+        if (r.id == widget.eventId) return r;
+      }
+      return null;
+    })();
+    final bool isFinished = selected?.finished ?? false;
 
     return Scaffold(
       body: Stack(
@@ -41,9 +56,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 8),
-                      // Static structure: title, subtitle and centered info button
                       Text(
-                        'Título del evento',
+                        selected?.name ?? 'Título del evento',
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(
                               fontWeight: FontWeight.w800,
@@ -52,7 +66,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Ubicación • Fecha',
+                        '${selected?.location ?? '-'} • ${selected?.date ?? '-'}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.grey[700],
                         ),
@@ -65,11 +79,31 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             label: 'Información',
                             icon: Icons.info_outline,
                             expanded: false,
-                            // navigate using named route; routers provide fallback
-                            onPressed: () => Navigator.pushNamed(
-                              context,
-                              Routers.eventDetailInfo,
-                            ),
+                            // navigate using named route and pass event info
+                            onPressed: () {
+                              if (selected == null) {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routers.eventDetailInfo,
+                                );
+                                return;
+                              }
+                              final info = EventDetailInfo(
+                                id: selected!.id ?? 0,
+                                name: selected!.name ?? '',
+                                date: selected!.date ?? '',
+                                location: selected!.location ?? '',
+                                registrationStartDate: '',
+                                registrationEndDate: '',
+                                finished: selected!.finished ?? false,
+                                event: selected!.toMap(),
+                              );
+                              Navigator.pushNamed(
+                                context,
+                                Routers.eventDetailInfo,
+                                arguments: info,
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -98,15 +132,19 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       _LargePillButton(
                         width: width,
                         label: 'Inscripciones',
-                        sublabel: 'Abiertas',
-                        backgroundColor: AppColors.primary,
+                        sublabel: isFinished ? 'Cerradas' : 'Abiertas',
+                        backgroundColor: isFinished
+                            ? Colors.grey.shade400
+                            : AppColors.primary,
                         textColor: Colors.white,
-                        onPressed: () {
-                          Navigator.pushNamed(
-                            context,
-                            Routers.raceRegistration,
-                          );
-                        },
+                        onPressed: isFinished
+                            ? null
+                            : () {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routers.raceRegistration,
+                                );
+                              },
                       ),
                       const SizedBox(height: 12),
                       _LargePillButton(
