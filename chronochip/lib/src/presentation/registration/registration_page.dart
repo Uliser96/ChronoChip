@@ -35,6 +35,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
   String? _selectedCategory;
   String? _selectedJersey;
   bool _isConfirmed = false;
+  bool _hasShownNoCategoriesDialog = false;
+  bool _hasRequestedCategories = false;
 
   @override
   void initState() {
@@ -245,6 +247,39 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                         borderRadius: BorderRadius.circular(12),
                                       );
 
+                                      if (!state.isLoadingCategories &&
+                                          state.categories.isEmpty &&
+                                          _hasRequestedCategories &&
+                                          !_hasShownNoCategoriesDialog) {
+                                        WidgetsBinding.instance
+                                            .addPostFrameCallback((_) {
+                                              if (!mounted) return;
+                                              setState(() {
+                                                _hasShownNoCategoriesDialog =
+                                                    true;
+                                              });
+                                              showDialog<void>(
+                                                context: context,
+                                                builder: (ctx) => AlertDialog(
+                                                  content: const Text(
+                                                    'No hay categorías para la información seleccionada.',
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(
+                                                            ctx,
+                                                          ).pop(),
+                                                      child: const Text(
+                                                        'Aceptar',
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            });
+                                      }
+
                                       return Container(
                                         height: 48,
                                         alignment: Alignment.centerLeft,
@@ -287,6 +322,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                       _dobController
                                                           .text
                                                           .isNotEmpty) {
+                                                    setState(() {
+                                                      _hasRequestedCategories =
+                                                          true;
+                                                      _hasShownNoCategoriesDialog =
+                                                          false;
+                                                    });
                                                     _bloc.add(
                                                       FetchCategoriesRequested(
                                                         eventId: widget.eventId,
@@ -369,6 +410,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                         });
                                         // If gender already selected, fetch categories
                                         if (_selectedSex != null) {
+                                          setState(() {
+                                            _hasRequestedCategories = true;
+                                            _hasShownNoCategoriesDialog = false;
+                                          });
                                           _bloc.add(
                                             FetchCategoriesRequested(
                                               eventId: widget.eventId,
@@ -923,9 +968,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                     ),
                                     child: Text(
                                       'Continuar',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.w600,
-                                        color: AppColors.primary,
+                                        color: Color.fromRGBO(241, 136, 0, 1),
                                       ),
                                     ),
                                   ),
