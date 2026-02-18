@@ -282,6 +282,21 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                   setState(() {
                                                     _selectedSex = val;
                                                   });
+                                                  // If birthdate already selected, fetch categories
+                                                  if (_selectedSex != null &&
+                                                      _dobController
+                                                          .text
+                                                          .isNotEmpty) {
+                                                    _bloc.add(
+                                                      FetchCategoriesRequested(
+                                                        eventId: widget.eventId,
+                                                        genderId:
+                                                            _selectedSex!.id,
+                                                        birthdate:
+                                                            _dobController.text,
+                                                      ),
+                                                    );
+                                                  }
                                                 },
                                           style: const TextStyle(
                                             color: Colors.white,
@@ -352,6 +367,16 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                         setState(() {
                                           _dobController.text = newDate;
                                         });
+                                        // If gender already selected, fetch categories
+                                        if (_selectedSex != null) {
+                                          _bloc.add(
+                                            FetchCategoriesRequested(
+                                              eventId: widget.eventId,
+                                              genderId: _selectedSex!.id,
+                                              birthdate: newDate,
+                                            ),
+                                          );
+                                        }
                                       }
                                     },
                                     decoration: InputDecoration(
@@ -593,42 +618,100 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   const SizedBox(height: 12),
 
                                   // Categoría dropdown
-                                  Container(
-                                    height: 48,
-                                    alignment: Alignment.centerLeft,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color.fromRGBO(
-                                        255,
-                                        255,
-                                        255,
-                                        0.18,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: DropdownButton<String>(
-                                      isExpanded: true,
-                                      underline: const SizedBox.shrink(),
-                                      hint: const Text(
-                                        'Categoría',
-                                        style: TextStyle(color: Colors.white70),
-                                      ),
-                                      value: _selectedCategory,
-                                      items: const [],
-                                      onChanged: null,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                      dropdownColor: const Color.fromRGBO(
-                                        241,
-                                        136,
-                                        0,
-                                        0.9,
-                                      ),
-                                    ),
+                                  BlocBuilder<
+                                    RegistrationBloc,
+                                    RegistrationState
+                                  >(
+                                    builder: (context, state) {
+                                      final boxDecoration = BoxDecoration(
+                                        color: const Color.fromRGBO(
+                                          255,
+                                          255,
+                                          255,
+                                          0.18,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      );
+
+                                      return Container(
+                                        height: 48,
+                                        alignment: Alignment.centerLeft,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: boxDecoration,
+                                        child: state.isLoadingCategories
+                                            ? const Center(
+                                                child: SizedBox(
+                                                  height: 18,
+                                                  width: 18,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        color: Colors.white,
+                                                        strokeWidth: 2,
+                                                      ),
+                                                ),
+                                              )
+                                            : DropdownButton<String>(
+                                                isExpanded: true,
+                                                underline:
+                                                    const SizedBox.shrink(),
+                                                hint: const Text(
+                                                  'Categoría',
+                                                  style: TextStyle(
+                                                    color: Colors.white70,
+                                                  ),
+                                                ),
+                                                value: _selectedCategory,
+                                                items: state.categories
+                                                    .map(
+                                                      (
+                                                        c,
+                                                      ) => DropdownMenuItem<String>(
+                                                        value: c.eventCategoryId
+                                                            .toString(),
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                horizontal: 14,
+                                                                vertical: 12,
+                                                              ),
+                                                          child: Text(
+                                                            c.displayName,
+                                                            style:
+                                                                const TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize: 16,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    )
+                                                    .toList(),
+                                                onChanged:
+                                                    state.categories.isEmpty
+                                                    ? null
+                                                    : (String? val) {
+                                                        setState(() {
+                                                          _selectedCategory =
+                                                              val;
+                                                        });
+                                                      },
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                                dropdownColor:
+                                                    const Color.fromRGBO(
+                                                      241,
+                                                      136,
+                                                      0,
+                                                      0.9,
+                                                    ),
+                                              ),
+                                      );
+                                    },
                                   ),
 
                                   const SizedBox(height: 12),

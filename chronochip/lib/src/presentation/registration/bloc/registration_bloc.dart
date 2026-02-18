@@ -12,6 +12,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
     on<FetchGendersRequested>(_onFetchGendersRequested);
     on<FetchStatesRequested>(_onFetchStatesRequested);
     on<FetchTshirtSizesRequested>(_onFetchTshirtSizesRequested);
+    on<FetchCategoriesRequested>(_onFetchCategoriesRequested);
   }
 
   Future<void> _onFetchGendersRequested(
@@ -55,6 +56,37 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
       );
     } catch (e) {
       emit(state.copyWith(isLoadingTshirtSizes: false, error: e.toString()));
+    }
+  }
+
+  Future<void> _onFetchCategoriesRequested(
+    FetchCategoriesRequested event,
+    Emitter<RegistrationState> emit,
+  ) async {
+    emit(state.copyWith(isLoadingCategories: true, error: null));
+    try {
+      // debug
+      // ignore: avoid_print
+      print(
+        'RegistrationBloc: fetching categories for event ${event.eventId}, gender ${event.genderId}, birthdate ${event.birthdate}',
+      );
+
+      final categories = await _apiService.filterEventCategories(
+        eventId: event.eventId,
+        genderId: event.genderId,
+        birthdate: event.birthdate,
+      );
+
+      // debug
+      // ignore: avoid_print
+      print('RegistrationBloc: received ${categories.length} categories');
+
+      emit(state.copyWith(isLoadingCategories: false, categories: categories));
+    } catch (e) {
+      // debug
+      // ignore: avoid_print
+      print('RegistrationBloc: error fetching categories: $e');
+      emit(state.copyWith(isLoadingCategories: false, error: e.toString()));
     }
   }
 }

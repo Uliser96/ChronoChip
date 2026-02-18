@@ -23,3 +23,18 @@ class FetchTshirtSizesRequested extends RegistrationEvent {
   @override
   List<Object?> get props => [eventId];
 }
+
+class FetchCategoriesRequested extends RegistrationEvent {
+  final int eventId;
+  final int genderId;
+  final String birthdate;
+
+  const FetchCategoriesRequested({
+    required this.eventId,
+    required this.genderId,
+    required this.birthdate,
+  });
+
+  @override
+  List<Object?> get props => [eventId, genderId, birthdate];
+}

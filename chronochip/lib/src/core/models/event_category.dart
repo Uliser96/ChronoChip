@@ -22,16 +22,38 @@ class EventCategory {
   });
 
   factory EventCategory.fromJson(Map<String, dynamic> json) {
+    int parseInt(dynamic v, [int fallback = 0]) {
+      if (v == null) return fallback;
+      if (v is int) return v;
+      if (v is String) return int.tryParse(v) ?? fallback;
+      if (v is num) return v.toInt();
+      return fallback;
+    }
+
+    double parseDouble(dynamic v, [double fallback = 0.0]) {
+      if (v == null) return fallback;
+      if (v is double) return v;
+      if (v is int) return v.toDouble();
+      if (v is String) return double.tryParse(v) ?? fallback;
+      if (v is num) return v.toDouble();
+      return fallback;
+    }
+
+    String parseString(dynamic v) {
+      if (v == null) return '';
+      return v.toString();
+    }
+
     return EventCategory(
-      id: json['id'] as int,
-      eventCategoryId: json['eventCategoryId'] as int,
-      categoryName: json['categoryName'] as String,
-      divisionName: json['divisionName'] as String,
-      displayName: json['displayName'] as String,
-      distanceKm: (json['distanceKm'] as num).toDouble(),
-      minAge: json['minAge'] as int,
-      maxAge: json['maxAge'] as int,
-      genderId: json['genderId'] as int,
+      id: parseInt(json['id']),
+      eventCategoryId: parseInt(json['eventCategoryId']),
+      categoryName: parseString(json['categoryName']),
+      divisionName: parseString(json['divisionName']),
+      displayName: parseString(json['displayName']),
+      distanceKm: parseDouble(json['distanceKm']),
+      minAge: parseInt(json['minAge']),
+      maxAge: parseInt(json['maxAge']),
+      genderId: parseInt(json['genderId']),
     );
   }
 }
