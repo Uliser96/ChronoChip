@@ -839,7 +839,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                       ),
                                     ),
                                     child: Text(
-                                      'Realizar pago',
+                                      'Continuar',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         color: AppColors.primary,
