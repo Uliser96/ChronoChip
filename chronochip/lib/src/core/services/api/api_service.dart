@@ -5,6 +5,7 @@ import 'package:chronochip/src/core/models/states_response/datum.dart';
 import 'package:chronochip/src/core/models/runner_response.dart';
 import 'package:chronochip/src/core/models/event_category.dart';
 import 'package:chronochip/src/core/models/tshirt_size.dart';
+import 'package:chronochip/src/core/models/tshirt_sizes_response/tshirt_sizes_response.dart';
 import 'package:chronochip/src/core/models/get_events_list_response/get_events_list_response.dart';
 import 'package:chronochip/src/core/models/get_event_by_id_response/get_event_by_id_response.dart';
 import 'api_client.dart';
@@ -238,6 +239,19 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw Exception('Error al obtener tallas de jersey: $e');
+    }
+  }
+
+  /// Obtiene las tallas de jersey para un evento específico
+  Future<TshirtSizesResponse> getEventTshirtSizes({
+    required int eventId,
+  }) async {
+    try {
+      final response = await _apiClient.get('api/events/$eventId/tshirt-sizes');
+      return TshirtSizesResponse.fromMap(response as Map<String, dynamic>);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al obtener tallas de jersey del evento: $e');
     }
   }
 

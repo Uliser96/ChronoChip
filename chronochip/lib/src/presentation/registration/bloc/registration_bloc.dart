@@ -11,6 +11,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
       super(const RegistrationState()) {
     on<FetchGendersRequested>(_onFetchGendersRequested);
     on<FetchStatesRequested>(_onFetchStatesRequested);
+    on<FetchTshirtSizesRequested>(_onFetchTshirtSizesRequested);
   }
 
   Future<void> _onFetchGendersRequested(
@@ -36,6 +37,24 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
       emit(state.copyWith(isLoading: false, states: states));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
+    }
+  }
+
+  Future<void> _onFetchTshirtSizesRequested(
+    FetchTshirtSizesRequested event,
+    Emitter<RegistrationState> emit,
+  ) async {
+    emit(state.copyWith(isLoadingTshirtSizes: true, error: null));
+    try {
+      final resp = await _apiService.getEventTshirtSizes(
+        eventId: event.eventId,
+      );
+      final tshirtData = resp.data ?? [];
+      emit(
+        state.copyWith(isLoadingTshirtSizes: false, tshirtSizes: tshirtData),
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoadingTshirtSizes: false, error: e.toString()));
     }
   }
 }

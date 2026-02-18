@@ -6,6 +6,8 @@ import 'bloc/registration_event.dart';
 import 'bloc/registration_state.dart';
 import 'package:chronochip/src/core/models/gender_response.dart';
 import 'package:chronochip/src/core/models/states_response/datum.dart';
+import 'package:chronochip/src/core/models/tshirt_sizes_response/datum.dart'
+    as TshirtDatum;
 
 class RegistrationPage extends StatefulWidget {
   final bool allowTshirtSize;
@@ -43,6 +45,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
     _bloc = RegistrationBloc();
     _bloc.add(const FetchGendersRequested());
     _bloc.add(const FetchStatesRequested());
+    if (widget.allowTshirtSize) {
+      _bloc.add(FetchTshirtSizesRequested(eventId: widget.eventId));
+    }
     _nameController = TextEditingController();
     _surnameController = TextEditingController();
     _teamController = TextEditingController();
@@ -628,44 +633,112 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                                   const SizedBox(height: 12),
 
-                                  // Jersey dropdown
-                                  Container(
-                                    height: 48,
-                                    alignment: Alignment.centerLeft,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
+                                  // Jersey dropdown (only when allowed)
+                                  if (widget.allowTshirtSize) ...[
+                                    BlocBuilder<
+                                      RegistrationBloc,
+                                      RegistrationState
+                                    >(
+                                      builder: (context, state) {
+                                        return Container(
+                                          height: 48,
+                                          alignment: Alignment.centerLeft,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color.fromRGBO(
+                                              255,
+                                              255,
+                                              255,
+                                              0.18,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: state.isLoadingTshirtSizes
+                                              ? const Center(
+                                                  child: SizedBox(
+                                                    height: 18,
+                                                    width: 18,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          color: Colors.white,
+                                                          strokeWidth: 2,
+                                                        ),
+                                                  ),
+                                                )
+                                              : DropdownButton<String>(
+                                                  isExpanded: true,
+                                                  underline:
+                                                      const SizedBox.shrink(),
+                                                  hint: const Text(
+                                                    'Jersey conmemorativo',
+                                                    style: TextStyle(
+                                                      color: Colors.white70,
+                                                    ),
+                                                  ),
+                                                  value: _selectedJersey,
+                                                  items: state.tshirtSizes.map((
+                                                    d,
+                                                  ) {
+                                                    final idStr =
+                                                        d.tshirtSize?.id
+                                                            ?.toString() ??
+                                                        '';
+                                                    final label =
+                                                        d
+                                                            .tshirtSize
+                                                            ?.description ??
+                                                        '';
+                                                    return DropdownMenuItem<
+                                                      String
+                                                    >(
+                                                      value: idStr,
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 14,
+                                                              vertical: 12,
+                                                            ),
+                                                        child: Text(
+                                                          label,
+                                                          style:
+                                                              const TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize: 16,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                                  onChanged:
+                                                      state.tshirtSizes.isEmpty
+                                                      ? null
+                                                      : (String? val) {
+                                                          setState(() {
+                                                            _selectedJersey =
+                                                                val;
+                                                          });
+                                                        },
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                  dropdownColor:
+                                                      const Color.fromRGBO(
+                                                        241,
+                                                        136,
+                                                        0,
+                                                        0.9,
+                                                      ),
+                                                ),
+                                        );
+                                      },
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: const Color.fromRGBO(
-                                        255,
-                                        255,
-                                        255,
-                                        0.18,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: DropdownButton<String>(
-                                      isExpanded: true,
-                                      underline: const SizedBox.shrink(),
-                                      hint: const Text(
-                                        'Jersey conmemorativo',
-                                        style: TextStyle(color: Colors.white70),
-                                      ),
-                                      value: _selectedJersey,
-                                      items: const [],
-                                      onChanged: null,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                      dropdownColor: const Color.fromRGBO(
-                                        241,
-                                        136,
-                                        0,
-                                        0.9,
-                                      ),
-                                    ),
-                                  ),
+                                  ],
 
                                   const SizedBox(height: 12),
 

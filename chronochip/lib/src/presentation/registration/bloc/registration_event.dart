@@ -14,3 +14,12 @@ class FetchGendersRequested extends RegistrationEvent {
 class FetchStatesRequested extends RegistrationEvent {
   const FetchStatesRequested();
 }
+
+class FetchTshirtSizesRequested extends RegistrationEvent {
+  final int eventId;
+
+  const FetchTshirtSizesRequested({required this.eventId});
+
+  @override
+  List<Object?> get props => [eventId];
+}
