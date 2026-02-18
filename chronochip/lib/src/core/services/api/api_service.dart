@@ -1,5 +1,7 @@
-import 'package:chronochip/src/core/models/login_response.dart';
+import 'package:chronochip/src/core/models/login_response.dart' hide Gender;
 import 'package:chronochip/src/core/models/gender_response.dart';
+import 'package:chronochip/src/core/models/states_response/states_response.dart';
+import 'package:chronochip/src/core/models/states_response/datum.dart';
 import 'package:chronochip/src/core/models/runner_response.dart';
 import 'package:chronochip/src/core/models/event_category.dart';
 import 'package:chronochip/src/core/models/tshirt_size.dart';
@@ -58,6 +60,33 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw Exception('Error al obtener géneros: $e');
+    }
+  }
+
+  /// Obtiene la lista de géneros para la pantalla de registro (separado
+  /// para no afectar llamadas existentes que dependan de `getGenders`).
+  Future<List<Gender>> getGendersForRegistration() async {
+    try {
+      final response = await _apiClient.get('api/genders');
+      final map = response as Map<String, dynamic>;
+      final parsed = GenderResponse.fromJson(map);
+      return parsed.data.rows;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al obtener géneros para registro: $e');
+    }
+  }
+
+  /// Obtiene la lista de estados para la pantalla de registro.
+  Future<List<Datum>> getStatesForRegistration() async {
+    try {
+      final response = await _apiClient.get('api/states');
+      final map = response as Map<String, dynamic>;
+      final parsed = StatesResponse.fromMap(map);
+      return parsed.data ?? [];
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al obtener estados para registro: $e');
     }
   }
 

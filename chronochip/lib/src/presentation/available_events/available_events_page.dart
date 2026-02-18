@@ -94,69 +94,69 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
       value: _bloc,
       child: Scaffold(
         body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset('assets/imgs/main_background.png', fit: BoxFit.cover),
-          SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 24,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '¡Es momento de elegir',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontStyle: FontStyle.italic,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const Text(
-                        'tu próximo reto!',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Buscar',
-                          prefixIcon: const Icon(Icons.search),
-                          filled: true,
-                          fillColor: Colors.grey.shade300,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+          fit: StackFit.expand,
+          children: [
+            Image.asset('assets/imgs/main_background.png', fit: BoxFit.cover),
+            SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 24,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '¡Es momento de elegir',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontStyle: FontStyle.italic,
+                            color: AppColors.primary,
                           ),
                         ),
-                      ),
-                    ],
+                        const Text(
+                          'tu próximo reto!',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Buscar',
+                            prefixIcon: const Icon(Icons.search),
+                            filled: true,
+                            fillColor: Colors.grey.shade300,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildBody(),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: _buildBody(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 
@@ -196,10 +196,8 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
                   final GetEventsListResponse resp = state.response;
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => EventDetailPage(
-                        eventId: e.id,
-                        eventsResponse: resp,
-                      ),
+                      builder: (_) =>
+                          EventDetailPage(eventId: e.id, eventsResponse: resp),
                     ),
                   );
                 }
@@ -220,11 +218,18 @@ class _AvailableEventsPageState extends State<AvailableEventsPage> {
     VoidCallback? onTap,
   }) {
     return InkWell(
-      onTap: onTap ?? () {
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => EventDetailPage(eventId: id, eventsResponse: GetEventsListResponse())));
-      },
+      onTap:
+          onTap ??
+          () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => EventDetailPage(
+                  eventId: id,
+                  eventsResponse: GetEventsListResponse(),
+                ),
+              ),
+            );
+          },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

@@ -164,7 +164,9 @@ class EventDetailInfoPage extends StatelessWidget {
                                     isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
                                     builder: (_) => SizedBox(
-                                      height: MediaQuery.of(context).size.height * 0.95,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                          0.95,
                                       child: DocumentWebViewModal(url: url),
                                     ),
                                   );
@@ -187,7 +189,8 @@ class EventDetailInfoPage extends StatelessWidget {
                                     ],
                                   ),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Text(
@@ -225,14 +228,24 @@ class EventDetailInfoPage extends StatelessWidget {
                   width: double.infinity,
                   child: BlocBuilder<EventDetailInfoBloc, EventDetailInfoState>(
                     builder: (context, state) {
+                      final data = state.eventResponse?.data;
                       return ElevatedButton(
                         onPressed: state.isSubmitting
                             ? null
                             : () {
+                                final allow = data?.allowTshirtSize ?? false;
+                                var id = 0;
+                                final rawId = data?.id;
+                                if (rawId is int) {
+                                  id = rawId;
+                                }
                                 Navigator.pushNamed(
                                   context,
-                                  Routers.raceRegistration,
-                                  arguments: eventId,
+                                  Routers.registration,
+                                  arguments: {
+                                    'allowTshirtSize': allow,
+                                    'eventId': id,
+                                  },
                                 );
                               },
                         style: ElevatedButton.styleFrom(
