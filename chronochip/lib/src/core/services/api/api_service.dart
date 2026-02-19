@@ -17,6 +17,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import '../token_storage.dart';
+import '../../models/payment_preference_response/payment_preference_response.dart';
 
 class ApiService {
   final ApiClient _apiClient;
@@ -377,6 +378,27 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw Exception('Error uploading profile image: $e');
+    }
+  }
+
+  /// Crea una preferencia de pago para una inscripción pendiente
+  Future<PaymentPreferenceResponse> createPaymentPreference({
+    required dynamic pendingRegistrationId,
+  }) async {
+    try {
+      final payload = {'pendingRegistrationId': pendingRegistrationId};
+
+      final response = await _apiClient.post(
+        'api/payments/create-preference',
+        body: payload,
+      );
+
+      return PaymentPreferenceResponse.fromMap(
+        response as Map<String, dynamic>,
+      );
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error en createPaymentPreference: $e');
     }
   }
 }

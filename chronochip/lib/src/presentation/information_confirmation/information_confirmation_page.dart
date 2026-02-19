@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chronochip/src/core/models/race_registration_response/race_registration_response.dart';
+import 'package:chronochip/src/core/services/api/api_service.dart';
 
 class InformationConfirmationPage extends StatelessWidget {
   final RaceRegistrationResponse? raceRegistration;
@@ -165,7 +166,62 @@ class InformationConfirmationPage extends StatelessWidget {
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
-                                    onPressed: () {},
+                                    onPressed:
+                                        raceRegistration
+                                                ?.data
+                                                ?.pendingRegistrationId ==
+                                            null
+                                        ? null
+                                        : () async {
+                                            // show loading
+                                            showDialog(
+                                              context: context,
+                                              barrierDismissible: false,
+                                              builder: (_) => const Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              ),
+                                            );
+
+                                            try {
+                                              final service = ApiService();
+                                              final resp = await service
+                                                  .createPaymentPreference(
+                                                    pendingRegistrationId:
+                                                        raceRegistration
+                                                            ?.data
+                                                            ?.pendingRegistrationId,
+                                                  );
+
+                                              final url = resp.data?.paymentUrl;
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    url ??
+                                                        'Error al generar el link de pago, contacte al administrador',
+                                                  ),
+                                                ),
+                                              );
+                                            } catch (e) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Error al generar el link de pago, contacte al administrador',
+                                                  ),
+                                                ),
+                                              );
+                                            } finally {
+                                              // hide loading
+                                              if (Navigator.of(
+                                                context,
+                                              ).canPop())
+                                                Navigator.of(context).pop();
+                                            }
+                                          },
                                     label: const Padding(
                                       padding: EdgeInsets.symmetric(
                                         vertical: 14,
