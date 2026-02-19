@@ -13,6 +13,9 @@ import 'package:chronochip/src/presentation/payment/payment_page.dart';
 import 'package:chronochip/src/presentation/registration/registration_page.dart';
 import 'package:chronochip/src/presentation/information_confirmation/information_confirmation_page.dart';
 import 'package:chronochip/src/core/models/race_registration_response/race_registration_response.dart';
+import 'package:chronochip/src/presentation/result_screens/succes_page.dart';
+import 'package:chronochip/src/presentation/result_screens/fail_page.dart';
+import 'package:chronochip/src/presentation/result_screens/pending_page.dart';
 
 /// Centralized app routes.
 class Routers {
@@ -28,6 +31,9 @@ class Routers {
   static const String registration = '/registration';
   static const String informationConfirmation = '/informationConfirmation';
   static const String payment = '/payment';
+  static const String pagoExitoso = '/pago-exitoso';
+  static const String pagoFallido = '/pago-fallido';
+  static const String pagoPendiente = '/pago-pendiente';
 
   static Map<String, WidgetBuilder> get routes => {
     welcome: (context) => const WelcomePage(),
@@ -75,5 +81,8 @@ class Routers {
       return const InformationConfirmationPage();
     },
     payment: (context) => const PaymentPage(),
+    pagoExitoso: (context) => const PagoCompletadoPage(),
+    pagoFallido: (context) => const PagoFallidoPage(),
+    pagoPendiente: (context) => const PagoPendientePage(),
   };
 }

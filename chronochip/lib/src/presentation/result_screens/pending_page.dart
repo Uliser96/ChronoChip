@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class PagoCompletadoPage extends StatelessWidget {
-  static const routeName = '/pago-completado';
+class PagoPendientePage extends StatelessWidget {
+  static const routeName = '/pago-pendiente';
 
-  const PagoCompletadoPage({Key? key}) : super(key: key);
+  const PagoPendientePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
