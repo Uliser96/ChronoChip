@@ -28,6 +28,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
   late TextEditingController _surnameController;
   late TextEditingController _teamController;
   late TextEditingController _dobController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
+  late TextEditingController _emergencyPhoneController;
+  late TextEditingController _cityController;
   String? _selectedRunner;
   Gender? _selectedSex;
   late RegistrationBloc _bloc;
@@ -37,6 +41,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
   bool _isConfirmed = false;
   bool _hasShownNoCategoriesDialog = false;
   bool _hasRequestedCategories = false;
+  bool _isEmailValid = true;
+  bool _isNameValid = true;
+  bool _isSurnameValid = true;
+  bool _isDobValid = true;
+  bool _isPhoneValid = true;
+  bool _isEmergencyPhoneValid = true;
+  bool _isCityValid = true;
+
+  bool _isEmailFormatValid(String email) {
+    final emailRegex = RegExp(r'^[\w\-.]+@([\w-]+\.)+[\w-]{2,}$');
+    return emailRegex.hasMatch(email);
+  }
 
   @override
   void initState() {
@@ -53,6 +69,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
     _nameController = TextEditingController();
     _surnameController = TextEditingController();
     _teamController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+    _emergencyPhoneController = TextEditingController();
+    _cityController = TextEditingController();
     _dobController = TextEditingController();
   }
 
@@ -62,6 +82,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
     _nameController.dispose();
     _surnameController.dispose();
     _teamController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _emergencyPhoneController.dispose();
+    _cityController.dispose();
     _dobController.dispose();
     super.dispose();
   }
@@ -168,6 +192,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   // Nombre
                                   TextField(
                                     controller: _nameController,
+                                    onChanged: (val) {
+                                      if (!_isNameValid &&
+                                          val.trim().isNotEmpty) {
+                                        setState(() {
+                                          _isNameValid = true;
+                                        });
+                                      }
+                                    },
                                     decoration: InputDecoration(
                                       hintText: 'Nombres',
                                       filled: true,
@@ -182,9 +214,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                             horizontal: 14,
                                             vertical: 12,
                                           ),
-                                      border: OutlineInputBorder(
+                                      enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide.none,
+                                        borderSide: _isNameValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: _isNameValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
                                       ),
                                       hintStyle: const TextStyle(
                                         color: Colors.white70,
@@ -200,6 +246,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   // Apellidos
                                   TextField(
                                     controller: _surnameController,
+                                    onChanged: (val) {
+                                      if (!_isSurnameValid &&
+                                          val.trim().isNotEmpty) {
+                                        setState(() {
+                                          _isSurnameValid = true;
+                                        });
+                                      }
+                                    },
                                     decoration: InputDecoration(
                                       hintText: 'Apellidos',
                                       filled: true,
@@ -214,9 +268,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                             horizontal: 14,
                                             vertical: 12,
                                           ),
-                                      border: OutlineInputBorder(
+                                      enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide.none,
+                                        borderSide: _isSurnameValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: _isSurnameValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
                                       ),
                                       hintStyle: const TextStyle(
                                         color: Colors.white70,
@@ -407,6 +475,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                             .first;
                                         setState(() {
                                           _dobController.text = newDate;
+                                          _isDobValid = true;
                                         });
                                         // If gender already selected, fetch categories
                                         if (_selectedSex != null) {
@@ -438,9 +507,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                             horizontal: 14,
                                             vertical: 12,
                                           ),
-                                      border: OutlineInputBorder(
+                                      enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide.none,
+                                        borderSide: _isDobValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: _isDobValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
                                       ),
                                       hintStyle: const TextStyle(
                                         color: Colors.white70,
@@ -487,8 +570,84 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                                   const SizedBox(height: 12),
 
+                                  // Email
+                                  TextField(
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    onChanged: (val) {
+                                      if (!_isEmailValid) {
+                                        final valid = _isEmailFormatValid(
+                                          val.trim(),
+                                        );
+                                        if (valid) {
+                                          setState(() {
+                                            _isEmailValid = true;
+                                          });
+                                        }
+                                      }
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: 'Email',
+                                      filled: true,
+                                      fillColor: const Color.fromRGBO(
+                                        255,
+                                        255,
+                                        255,
+                                        0.18,
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 12,
+                                          ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: _isEmailValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: _isEmailValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
+                                      ),
+                                      hintStyle: const TextStyle(
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 12),
+
                                   // Teléfono
                                   TextField(
+                                    controller: _phoneController,
+                                    keyboardType: TextInputType.phone,
+                                    onChanged: (val) {
+                                      final trimmed = val.trim();
+                                      if (trimmed.length == 10 &&
+                                          !_isPhoneValid) {
+                                        setState(() {
+                                          _isPhoneValid = true;
+                                        });
+                                      } else if (trimmed.length != 10 &&
+                                          _isPhoneValid) {
+                                        setState(() {
+                                          _isPhoneValid = false;
+                                        });
+                                      }
+                                    },
                                     decoration: InputDecoration(
                                       hintText: 'Teléfono',
                                       filled: true,
@@ -503,9 +662,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                             horizontal: 14,
                                             vertical: 12,
                                           ),
-                                      border: OutlineInputBorder(
+                                      enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide.none,
+                                        borderSide: _isPhoneValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: _isPhoneValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
                                       ),
                                       hintStyle: const TextStyle(
                                         color: Colors.white70,
@@ -521,6 +694,22 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                                   // Teléfono de emergencia
                                   TextField(
+                                    controller: _emergencyPhoneController,
+                                    keyboardType: TextInputType.phone,
+                                    onChanged: (val) {
+                                      final trimmed = val.trim();
+                                      if (trimmed.length == 10 &&
+                                          !_isEmergencyPhoneValid) {
+                                        setState(() {
+                                          _isEmergencyPhoneValid = true;
+                                        });
+                                      } else if (trimmed.length != 10 &&
+                                          _isEmergencyPhoneValid) {
+                                        setState(() {
+                                          _isEmergencyPhoneValid = false;
+                                        });
+                                      }
+                                    },
                                     decoration: InputDecoration(
                                       hintText: 'Teléfono de emergencia',
                                       filled: true,
@@ -535,9 +724,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                             horizontal: 14,
                                             vertical: 12,
                                           ),
-                                      border: OutlineInputBorder(
+                                      enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide.none,
+                                        borderSide: _isEmergencyPhoneValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: _isEmergencyPhoneValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
                                       ),
                                       hintStyle: const TextStyle(
                                         color: Colors.white70,
@@ -632,6 +835,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                                   // Ciudad
                                   TextField(
+                                    controller: _cityController,
+                                    onChanged: (val) {
+                                      if (!_isCityValid &&
+                                          val.trim().isNotEmpty) {
+                                        setState(() {
+                                          _isCityValid = true;
+                                        });
+                                      }
+                                    },
                                     decoration: InputDecoration(
                                       hintText: 'Ciudad',
                                       filled: true,
@@ -646,9 +858,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                             horizontal: 14,
                                             vertical: 12,
                                           ),
-                                      border: OutlineInputBorder(
+                                      enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide.none,
+                                        borderSide: _isCityValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: _isCityValid
+                                            ? BorderSide.none
+                                            : const BorderSide(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
                                       ),
                                       hintStyle: const TextStyle(
                                         color: Colors.white70,
@@ -708,7 +934,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                     color: Colors.white70,
                                                   ),
                                                 ),
-                                                value: _selectedCategory,
+                                                value:
+                                                    state.categories.any(
+                                                      (c) =>
+                                                          c.eventCategoryId
+                                                              .toString() ==
+                                                          _selectedCategory,
+                                                    )
+                                                    ? _selectedCategory
+                                                    : null,
                                                 items: state.categories
                                                     .map(
                                                       (
@@ -923,7 +1157,60 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                                   // Realizar pago button
                                   ElevatedButton(
-                                    onPressed: _isConfirmed ? () {} : null,
+                                    onPressed: _isConfirmed
+                                        ? () {
+                                            final name = _nameController.text
+                                                .trim();
+                                            final surname = _surnameController
+                                                .text
+                                                .trim();
+                                            final dob = _dobController.text
+                                                .trim();
+                                            final phone = _phoneController.text
+                                                .trim();
+                                            final emergency =
+                                                _emergencyPhoneController.text
+                                                    .trim();
+                                            final city = _cityController.text
+                                                .trim();
+                                            final email = _emailController.text
+                                                .trim();
+
+                                            final nameValid = name.isNotEmpty;
+                                            final surnameValid =
+                                                surname.isNotEmpty;
+                                            final dobValid = dob.isNotEmpty;
+                                            final phoneValid =
+                                                phone.length == 10;
+                                            final emergencyValid =
+                                                emergency.length == 10;
+                                            final cityValid = city.isNotEmpty;
+                                            final emailValid =
+                                                _isEmailFormatValid(email);
+
+                                            setState(() {
+                                              _isNameValid = nameValid;
+                                              _isSurnameValid = surnameValid;
+                                              _isDobValid = dobValid;
+                                              _isPhoneValid = phoneValid;
+                                              _isEmergencyPhoneValid =
+                                                  emergencyValid;
+                                              _isCityValid = cityValid;
+                                              _isEmailValid = emailValid;
+                                            });
+
+                                            if (!nameValid ||
+                                                !surnameValid ||
+                                                !dobValid ||
+                                                !phoneValid ||
+                                                !emergencyValid ||
+                                                !cityValid ||
+                                                !emailValid)
+                                              return;
+
+                                            // All validations passed — continuar con el flujo
+                                          }
+                                        : null,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       foregroundColor: AppColors.primary,
