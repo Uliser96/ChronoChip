@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chronochip/src/core/models/race_registration_response/race_registration_response.dart';
 import 'package:chronochip/src/core/services/api/api_service.dart';
+import 'package:flutter_custom_tabs/flutter_custom_tabs.dart';
 
 class InformationConfirmationPage extends StatelessWidget {
   final RaceRegistrationResponse? raceRegistration;
@@ -194,16 +195,7 @@ class InformationConfirmationPage extends StatelessWidget {
                                                   );
 
                                               final url = resp.data?.paymentUrl;
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    url ??
-                                                        'Error al generar el link de pago, contacte al administrador',
-                                                  ),
-                                                ),
-                                              );
+                                              _launchURL(context, url!);
                                             } catch (e) {
                                               ScaffoldMessenger.of(
                                                 context,
@@ -252,5 +244,34 @@ class InformationConfirmationPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _launchURL(BuildContext context, String url) async {
+    final theme = Theme.of(context);
+    try {
+      await launchUrl(
+        Uri.parse(url),
+        customTabsOptions: CustomTabsOptions(
+          colorSchemes: CustomTabsColorSchemes.defaults(
+            toolbarColor: theme.colorScheme.surface,
+          ),
+          shareState: CustomTabsShareState.on,
+          urlBarHidingEnabled: true,
+          showTitle: true,
+          closeButton: CustomTabsCloseButton(
+            icon: CustomTabsCloseButtonIcons.back,
+          ),
+          animations: const CustomTabsAnimations(
+            startEnter: 'slide_up',
+            startExit: 'android:anim/fade_out',
+            endEnter: 'android:anim/fade_in',
+            endExit: 'slide_down',
+          ),
+        ),
+      );
+    } catch (e) {
+      // Se lanza una excepción si no hay una aplicación de navegador instalada en el dispositivo Android.
+      debugPrint(e.toString());
+    }
   }
 }

@@ -5,6 +5,7 @@ import 'bloc/event_detail_info_event.dart';
 import 'bloc/event_detail_info_state.dart';
 import 'package:chronochip/src/core/routers/routers.dart';
 import 'document_webview_modal.dart';
+import 'package:flutter_custom_tabs/flutter_custom_tabs.dart';
 
 class EventDetailInfoPage extends StatelessWidget {
   final int eventId;
@@ -159,17 +160,7 @@ class EventDetailInfoPage extends StatelessWidget {
                                 onTap: () {
                                   final url = doc.documentUrl;
                                   if (url == null || url.isEmpty) return;
-                                  showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (_) => SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                          0.95,
-                                      child: DocumentWebViewModal(url: url),
-                                    ),
-                                  );
+                                  _launchURL(context, url);
                                 },
                                 child: Container(
                                   margin: const EdgeInsets.only(bottom: 8),
@@ -347,5 +338,34 @@ class _InfoCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+void _launchURL(BuildContext context, String url) async {
+  final theme = Theme.of(context);
+  try {
+    await launchUrl(
+      Uri.parse(url),
+      customTabsOptions: CustomTabsOptions(
+        colorSchemes: CustomTabsColorSchemes.defaults(
+          toolbarColor: theme.colorScheme.surface,
+        ),
+        shareState: CustomTabsShareState.on,
+        urlBarHidingEnabled: true,
+        showTitle: true,
+        closeButton: CustomTabsCloseButton(
+          icon: CustomTabsCloseButtonIcons.back,
+        ),
+        animations: const CustomTabsAnimations(
+          startEnter: 'slide_up',
+          startExit: 'android:anim/fade_out',
+          endEnter: 'android:anim/fade_in',
+          endExit: 'slide_down',
+        ),
+      ),
+    );
+  } catch (e) {
+    // Se lanza una excepción si no hay una aplicación de navegador instalada en el dispositivo Android.
+    debugPrint(e.toString());
   }
 }
