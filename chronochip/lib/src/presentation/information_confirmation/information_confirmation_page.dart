@@ -143,11 +143,21 @@ class InformationConfirmationPage extends StatelessWidget {
                                   ),
                                 ),
 
-                                buildLine('Descuento:', '\$0.00'),
-                                buildLine('Comisión:', '\$0.00'),
+                                buildLine(
+                                  'Registro:',
+                                  raceRegistration?.data?.registrationCost ??
+                                      '-',
+                                ),
+                                buildLine(
+                                  'Comisión:',
+                                  raceRegistration
+                                          ?.data
+                                          ?.onlinePaymentCommission ??
+                                      '-',
+                                ),
                                 buildLine(
                                   'Total:',
-                                  '\$1,690.00',
+                                  raceRegistration?.data?.totalAmount ?? '-',
                                   isTotal: true,
                                 ),
                                 const SizedBox(height: 20),

@@ -9,6 +9,9 @@ class Data {
   int? pendingRegistrationId;
   RunnerData? runnerData;
   EventCategory? eventCategory;
+  String? registrationCost;
+  String? onlinePaymentCommission;
+  String? totalAmount;
 
   Data({
     this.message,
@@ -16,11 +19,14 @@ class Data {
     this.pendingRegistrationId,
     this.runnerData,
     this.eventCategory,
+    this.registrationCost,
+    this.onlinePaymentCommission,
+    this.totalAmount,
   });
 
   @override
   String toString() {
-    return 'Data(message: $message, runnerId: $runnerId, pendingRegistrationId: $pendingRegistrationId, runnerData: $runnerData, eventCategory: $eventCategory)';
+    return 'Data(message: $message, runnerId: $runnerId, pendingRegistrationId: $pendingRegistrationId, runnerData: $runnerData, eventCategory: $eventCategory, registrationCost: $registrationCost, onlinePaymentCommission: $onlinePaymentCommission, totalAmount: $totalAmount)';
   }
 
   factory Data.fromMap(Map<String, dynamic> data) {
@@ -44,6 +50,9 @@ class Data {
           : EventCategory.fromMap(
               data['eventCategory'] as Map<String, dynamic>,
             ),
+      registrationCost: data['registrationCost']?.toString(),
+      onlinePaymentCommission: data['onlinePaymentCommission']?.toString(),
+      totalAmount: data['totalAmount']?.toString(),
     );
   }
 
@@ -53,6 +62,9 @@ class Data {
     'pendingRegistrationId': pendingRegistrationId,
     'runnerData': runnerData?.toMap(),
     'eventCategory': eventCategory?.toMap(),
+    'registrationCost': registrationCost,
+    'onlinePaymentCommission': onlinePaymentCommission,
+    'totalAmount': totalAmount,
   };
 
   /// `dart:convert`
@@ -73,6 +85,9 @@ class Data {
     int? pendingRegistrationId,
     RunnerData? runnerData,
     EventCategory? eventCategory,
+    String? registrationCost,
+    String? onlinePaymentCommission,
+    String? totalAmount,
   }) {
     return Data(
       message: message ?? this.message,
@@ -81,6 +96,10 @@ class Data {
           pendingRegistrationId ?? this.pendingRegistrationId,
       runnerData: runnerData ?? this.runnerData,
       eventCategory: eventCategory ?? this.eventCategory,
+      registrationCost: registrationCost ?? this.registrationCost,
+      onlinePaymentCommission:
+          onlinePaymentCommission ?? this.onlinePaymentCommission,
+      totalAmount: totalAmount ?? this.totalAmount,
     );
   }
 }
