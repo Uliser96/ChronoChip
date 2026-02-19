@@ -348,6 +348,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                             });
                                       }
 
+                                      // Log when categories finish loading (may run multiple times)
+                                      if (!state.isLoadingCategories &&
+                                          state.categories.isNotEmpty) {
+                                        try {
+                                          debugPrint(
+                                            'RegistrationPage: categories loaded (${state.categories.length}): ' +
+                                                state.categories
+                                                    .map(
+                                                      (c) =>
+                                                          '${c.displayName}:${c.eventCategoryId}',
+                                                    )
+                                                    .toList()
+                                                    .toString(),
+                                          );
+                                        } catch (_) {}
+                                      }
+
                                       return Container(
                                         height: 48,
                                         alignment: Alignment.centerLeft,
@@ -934,41 +951,51 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                     color: Colors.white70,
                                                   ),
                                                 ),
+                                                // compute category id string using eventCategoryId when available
                                                 value:
-                                                    state.categories.any(
-                                                      (c) =>
-                                                          c.eventCategoryId
-                                                              .toString() ==
-                                                          _selectedCategory,
-                                                    )
+                                                    _selectedCategory != null &&
+                                                        state.categories.any((
+                                                          c,
+                                                        ) {
+                                                          final idStr =
+                                                              (c.eventCategoryId !=
+                                                                          0
+                                                                      ? c.eventCategoryId
+                                                                      : c.id)
+                                                                  .toString();
+                                                          return idStr ==
+                                                              _selectedCategory;
+                                                        })
                                                     ? _selectedCategory
                                                     : null,
-                                                items: state.categories
-                                                    .map(
-                                                      (
-                                                        c,
-                                                      ) => DropdownMenuItem<String>(
-                                                        value: c.eventCategoryId
-                                                            .toString(),
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets.symmetric(
-                                                                horizontal: 14,
-                                                                vertical: 12,
-                                                              ),
-                                                          child: Text(
-                                                            c.displayName,
-                                                            style:
-                                                                const TextStyle(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontSize: 16,
-                                                                ),
+                                                items: state.categories.map((
+                                                  c,
+                                                ) {
+                                                  final idStr =
+                                                      (c.eventCategoryId != 0
+                                                              ? c.eventCategoryId
+                                                              : c.id)
+                                                          .toString();
+                                                  return DropdownMenuItem<
+                                                    String
+                                                  >(
+                                                    value: idStr,
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 14,
+                                                            vertical: 12,
                                                           ),
+                                                      child: Text(
+                                                        c.displayName,
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 16,
                                                         ),
                                                       ),
-                                                    )
-                                                    .toList(),
+                                                    ),
+                                                  );
+                                                }).toList(),
                                                 onChanged:
                                                     state.categories.isEmpty
                                                     ? null
@@ -977,6 +1004,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                           _selectedCategory =
                                                               val;
                                                         });
+                                                        debugPrint(
+                                                          'RegistrationPage: category selected -> $val',
+                                                        );
                                                       },
                                                 style: const TextStyle(
                                                   color: Colors.white,
