@@ -198,16 +198,7 @@ class RaceRegistrationBloc
       final teamName = event.teamName ?? '';
       final tshirtSize = event.tshirtSize ?? 0;
 
-      final resp = await _apiService.submitRaceRegistration(
-        runnerId: runnerId,
-        firstName: event.firstName,
-        lastName: event.lastName,
-        birthdate: event.birthdate,
-        genderId: event.genderId,
-        teamName: teamName,
-        eventCategoryId: event.eventCategoryId,
-        tshirtSize: tshirtSize,
-      );
+      final resp = null;
 
       // consider success when no exception thrown; may inspect resp
       emit(state.copyWith(isSubmitting: false, isSuccess: true));

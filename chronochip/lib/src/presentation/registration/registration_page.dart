@@ -8,6 +8,8 @@ import 'package:chronochip/src/core/models/gender_response.dart';
 import 'package:chronochip/src/core/models/states_response/datum.dart';
 import 'package:chronochip/src/core/models/tshirt_sizes_response/datum.dart'
     as TshirtDatum;
+import 'package:chronochip/src/core/services/api/api_service.dart';
+import 'package:chronochip/src/core/models/race_registration_response/race_registration_response.dart';
 
 class RegistrationPage extends StatefulWidget {
   final bool allowTshirtSize;
@@ -39,6 +41,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
   String? _selectedCategory;
   String? _selectedJersey;
   bool _isConfirmed = false;
+  bool _isSubmitting = false;
+  RaceRegistrationResponse? _raceRegistrationResponse;
   bool _hasShownNoCategoriesDialog = false;
   bool _hasRequestedCategories = false;
   bool _isEmailValid = true;
@@ -48,6 +52,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
   bool _isPhoneValid = true;
   bool _isEmergencyPhoneValid = true;
   bool _isCityValid = true;
+  // Dropdown validation flags
+  bool _isSexValid = true;
+  bool _isStateValid = true;
+  bool _isCategoryValid = true;
+  bool _isJerseyValid = true;
 
   bool _isEmailFormatValid(String email) {
     final emailRegex = RegExp(r'^[\w\-.]+@([\w-]+\.)+[\w-]{2,}$');
@@ -313,6 +322,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                           0.18,
                                         ),
                                         borderRadius: BorderRadius.circular(12),
+                                        border: _isSexValid
+                                            ? null
+                                            : Border.all(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
                                       );
 
                                       if (!state.isLoadingCategories &&
@@ -401,6 +416,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                               : (Gender? val) {
                                                   setState(() {
                                                     _selectedSex = val;
+                                                    _isSexValid = true;
+                                                    // reset selected category when sex changes
+                                                    _selectedCategory = null;
+                                                    _isCategoryValid = true;
                                                   });
                                                   // If birthdate already selected, fetch categories
                                                   if (_selectedSex != null &&
@@ -786,6 +805,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                           0.18,
                                         ),
                                         borderRadius: BorderRadius.circular(12),
+                                        border: _isStateValid
+                                            ? null
+                                            : Border.all(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
                                       );
 
                                       return Container(
@@ -832,6 +857,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                               : (Datum? val) {
                                                   setState(() {
                                                     _selectedState = val;
+                                                    _isStateValid = true;
                                                   });
                                                 },
                                           style: const TextStyle(
@@ -919,6 +945,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                           0.18,
                                         ),
                                         borderRadius: BorderRadius.circular(12),
+                                        border: _isCategoryValid
+                                            ? null
+                                            : Border.all(
+                                                color: Colors.red,
+                                                width: 1.6,
+                                              ),
                                       );
 
                                       return Container(
@@ -1003,6 +1035,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                         setState(() {
                                                           _selectedCategory =
                                                               val;
+                                                          _isCategoryValid =
+                                                              true;
                                                         });
                                                         debugPrint(
                                                           'RegistrationPage: category selected -> $val',
@@ -1049,6 +1083,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                             borderRadius: BorderRadius.circular(
                                               12,
                                             ),
+                                            border: _isJerseyValid
+                                                ? null
+                                                : Border.all(
+                                                    color: Colors.red,
+                                                    width: 1.6,
+                                                  ),
                                           ),
                                           child: state.isLoadingTshirtSizes
                                               ? const Center(
@@ -1077,9 +1117,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                     d,
                                                   ) {
                                                     final idStr =
-                                                        d.tshirtSize?.id
-                                                            ?.toString() ??
-                                                        '';
+                                                        d.id?.toString() ?? '';
                                                     final label =
                                                         d
                                                             .tshirtSize
@@ -1114,6 +1152,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                           setState(() {
                                                             _selectedJersey =
                                                                 val;
+                                                            _isJerseyValid =
+                                                                true;
                                                           });
                                                         },
                                                   style: const TextStyle(
@@ -1187,8 +1227,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                                   // Realizar pago button
                                   ElevatedButton(
-                                    onPressed: _isConfirmed
-                                        ? () {
+                                    onPressed: _isConfirmed && !_isSubmitting
+                                        ? () async {
                                             final name = _nameController.text
                                                 .trim();
                                             final surname = _surnameController
@@ -1218,6 +1258,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                             final emailValid =
                                                 _isEmailFormatValid(email);
 
+                                            // Dropdown validations
+                                            final sexValid =
+                                                _selectedSex != null;
+                                            final stateValid =
+                                                _selectedState != null;
+                                            final categoryValid =
+                                                _selectedCategory != null;
+                                            final jerseyValid =
+                                                widget.allowTshirtSize
+                                                ? _selectedJersey != null
+                                                : true;
+
                                             setState(() {
                                               _isNameValid = nameValid;
                                               _isSurnameValid = surnameValid;
@@ -1227,18 +1279,88 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                   emergencyValid;
                                               _isCityValid = cityValid;
                                               _isEmailValid = emailValid;
+                                              // dropdown validity
+                                              _isSexValid = sexValid;
+                                              _isStateValid = stateValid;
+                                              _isCategoryValid = categoryValid;
+                                              _isJerseyValid = jerseyValid;
                                             });
-
                                             if (!nameValid ||
                                                 !surnameValid ||
                                                 !dobValid ||
                                                 !phoneValid ||
                                                 !emergencyValid ||
                                                 !cityValid ||
-                                                !emailValid)
+                                                !emailValid ||
+                                                !sexValid ||
+                                                !stateValid ||
+                                                !categoryValid ||
+                                                !jerseyValid) {
                                               return;
+                                            }
 
-                                            // All validations passed — continuar con el flujo
+                                            // All validations passed — submit to API
+                                            setState(() {
+                                              _isSubmitting = true;
+                                            });
+                                            try {
+                                              final api = ApiService();
+                                              final int categoryId =
+                                                  int.tryParse(
+                                                    _selectedCategory ?? '',
+                                                  ) ??
+                                                  0;
+                                              final int? tshirtId =
+                                                  int.tryParse(
+                                                    _selectedJersey ?? '',
+                                                  );
+                                              final resp = await api
+                                                  .submitRaceRegistration(
+                                                    runnerId: 0,
+                                                    firstName: name,
+                                                    lastName: surname,
+                                                    birthdate: dob,
+                                                    genderId: _selectedSex!.id,
+                                                    teamName: _teamController
+                                                        .text
+                                                        .trim(),
+                                                    eventCategoryId: categoryId,
+                                                    eventTshirtSizeId: tshirtId,
+                                                    email: email,
+                                                    phone: phone,
+                                                    stateId:
+                                                        _selectedState!.id!,
+                                                    city: city,
+                                                    emergencyPhone: emergency,
+                                                  );
+                                              setState(() {
+                                                _raceRegistrationResponse =
+                                                    resp;
+                                              });
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Registro enviado',
+                                                  ),
+                                                ),
+                                              );
+                                            } catch (e) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Error al enviar: $e',
+                                                  ),
+                                                ),
+                                              );
+                                            } finally {
+                                              setState(() {
+                                                _isSubmitting = false;
+                                              });
+                                            }
                                           }
                                         : null,
                                     style: ElevatedButton.styleFrom(

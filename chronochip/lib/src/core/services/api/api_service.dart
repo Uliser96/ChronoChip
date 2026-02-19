@@ -11,6 +11,7 @@ import 'package:chronochip/src/core/models/get_event_by_id_response/get_event_by
 import 'api_client.dart';
 import 'api_exception.dart';
 import '../../models/register_response.dart';
+import '../../models/race_registration_response/race_registration_response.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -224,6 +225,51 @@ class ApiService {
     }
   }
 
+  /// Envía la inscripción de un corredor a la API
+  Future<RaceRegistrationResponse> submitRaceRegistration({
+    required int runnerId,
+    required String firstName,
+    required String lastName,
+    required String birthdate,
+    required int genderId,
+    required String teamName,
+    required int eventCategoryId,
+    required int? eventTshirtSizeId,
+    required String email,
+    required String phone,
+    required int stateId,
+    required String city,
+    required String emergencyPhone,
+  }) async {
+    try {
+      final payload = {
+        'runnerId': runnerId,
+        'firstName': firstName,
+        'lastName': lastName,
+        'birthdate': birthdate,
+        'genderId': genderId,
+        'teamName': teamName,
+        'eventCategoryId': eventCategoryId,
+        'eventTshirtSizeId': eventTshirtSizeId,
+        'email': email,
+        'phone': phone,
+        'stateId': stateId,
+        'city': city,
+        'emergencyPhone': emergencyPhone,
+      };
+
+      final response = await _apiClient.post(
+        'api/race-registration',
+        body: payload,
+      );
+
+      return RaceRegistrationResponse.fromMap(response as Map<String, dynamic>);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error en submitRaceRegistration: $e');
+    }
+  }
+
   /// Obtiene las tallas de jersey (tshirt sizes)
   Future<List<TShirtSize>> getTshirtSizes() async {
     try {
@@ -331,41 +377,6 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw Exception('Error uploading profile image: $e');
-    }
-  }
-
-  /// Envía la inscripción a la carrera
-  Future<Map<String, dynamic>> submitRaceRegistration({
-    required int runnerId,
-    required String firstName,
-    required String lastName,
-    required String birthdate,
-    required int genderId,
-    required String teamName,
-    required int eventCategoryId,
-    required int tshirtSize,
-  }) async {
-    try {
-      final payload = {
-        'runnerId': runnerId,
-        'firstName': firstName,
-        'lastName': lastName,
-        'birthdate': birthdate,
-        'genderId': genderId,
-        'teamName': teamName,
-        'eventCategoryId': eventCategoryId,
-        'tshirtSize': tshirtSize,
-      };
-
-      final response = await _apiClient.post(
-        'api/race-registration',
-        body: payload,
-      );
-
-      return response as Map<String, dynamic>;
-    } catch (e) {
-      if (e is ApiException) rethrow;
-      throw Exception('Error al enviar inscripción: $e');
     }
   }
 }
