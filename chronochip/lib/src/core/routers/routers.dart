@@ -11,6 +11,8 @@ import 'package:chronochip/src/presentation/event_detail_info/event_detail_info_
 import 'package:chronochip/src/presentation/race_registration/race_registration_page.dart';
 import 'package:chronochip/src/presentation/payment/payment_page.dart';
 import 'package:chronochip/src/presentation/registration/registration_page.dart';
+import 'package:chronochip/src/presentation/information_confirmation/information_confirmation_page.dart';
+import 'package:chronochip/src/core/models/race_registration_response/race_registration_response.dart';
 
 /// Centralized app routes.
 class Routers {
@@ -24,6 +26,7 @@ class Routers {
   static const String eventDetailInfo = '/event-detail-info';
   static const String raceRegistration = '/race-registration';
   static const String registration = '/registration';
+  static const String informationConfirmation = '/informationConfirmation';
   static const String payment = '/payment';
 
   static Map<String, WidgetBuilder> get routes => {
@@ -63,6 +66,13 @@ class Routers {
         return RegistrationPage(allowTshirtSize: allow, eventId: id);
       }
       return const RegistrationPage();
+    },
+    informationConfirmation: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is RaceRegistrationResponse) {
+        return InformationConfirmationPage(raceRegistration: args);
+      }
+      return const InformationConfirmationPage();
     },
     payment: (context) => const PaymentPage(),
   };

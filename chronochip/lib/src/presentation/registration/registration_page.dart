@@ -10,6 +10,7 @@ import 'package:chronochip/src/core/models/tshirt_sizes_response/datum.dart'
     as TshirtDatum;
 import 'package:chronochip/src/core/services/api/api_service.dart';
 import 'package:chronochip/src/core/models/race_registration_response/race_registration_response.dart';
+import 'package:chronochip/src/core/routers/routers.dart';
 
 class RegistrationPage extends StatefulWidget {
   final bool allowTshirtSize;
@@ -1346,6 +1347,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                   ),
                                                 ),
                                               );
+
+                                              // Navegar a pantalla de confirmación con el modelo completo
+                                              try {
+                                                Navigator.of(context).pushNamed(
+                                                  Routers
+                                                      .informationConfirmation,
+                                                  arguments: resp,
+                                                );
+                                              } catch (_) {}
                                             } catch (e) {
                                               ScaffoldMessenger.of(
                                                 context,
