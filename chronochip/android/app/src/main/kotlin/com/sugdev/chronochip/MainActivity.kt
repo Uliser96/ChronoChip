@@ -1,4 +1,4 @@
-package com.example.chronochip
+package com.sugdev.chronochip
 
 import io.flutter.embedding.android.FlutterActivity
 
