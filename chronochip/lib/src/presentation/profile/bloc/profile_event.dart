@@ -1,8 +1,18 @@
-abstract class ProfileEvent {}
+import 'dart:io';
+import 'package:equatable/equatable.dart';
 
-class FetchProfile extends ProfileEvent {}
+abstract class ProfileEvent extends Equatable {
+  const ProfileEvent();
+
+  @override
+  List<Object?> get props => [];
+}
 
 class UploadProfileImage extends ProfileEvent {
-  final String imagePath;
-  UploadProfileImage(this.imagePath);
+  final File file;
+
+  const UploadProfileImage(this.file);
+
+  @override
+  List<Object?> get props => [file.path];
 }

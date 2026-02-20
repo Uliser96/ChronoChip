@@ -1,28 +1,30 @@
-abstract class ProfileState {}
+import 'package:equatable/equatable.dart';
+
+abstract class ProfileState extends Equatable {
+  const ProfileState();
+
+  @override
+  List<Object?> get props => [];
+}
 
 class ProfileInitial extends ProfileState {}
 
 class ProfileLoading extends ProfileState {}
 
-class ProfileLoaded extends ProfileState {
-  final String fullName;
-  final String? profileImageUrl;
-  final String favoriteDistance;
-  final String bestPaceTime;
-  final String yearlyKm;
-  final String raceCount;
+class ProfileImageUploadSuccess extends ProfileState {
+  final String imageUrl;
 
-  ProfileLoaded({
-    required this.fullName,
-    required this.profileImageUrl,
-    required this.favoriteDistance,
-    required this.bestPaceTime,
-    required this.yearlyKm,
-    required this.raceCount,
-  });
+  const ProfileImageUploadSuccess(this.imageUrl);
+
+  @override
+  List<Object?> get props => [imageUrl];
 }
 
-class ProfileError extends ProfileState {
-  final String message;
-  ProfileError(this.message);
+class ProfileFailure extends ProfileState {
+  final String error;
+
+  const ProfileFailure(this.error);
+
+  @override
+  List<Object?> get props => [error];
 }
