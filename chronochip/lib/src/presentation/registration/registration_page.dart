@@ -1338,17 +1338,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                 _raceRegistrationResponse =
                                                     resp;
                                               });
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                const SnackBar(
-                                                  content: Text(
-                                                    'Registro enviado',
-                                                  ),
-                                                ),
-                                              );
-
-                                              // Navegar a pantalla de confirmación con el modelo completo
                                               try {
                                                 Navigator.of(context).pushNamed(
                                                   Routers
