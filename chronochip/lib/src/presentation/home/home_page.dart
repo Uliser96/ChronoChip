@@ -54,10 +54,16 @@ class _HomePageState extends State<HomePage> {
                   child: ClipOval(
                     child: Container(
                       color: Colors.grey.shade300,
-                      child: Icon(
-                        Icons.image,
-                        color: Colors.grey.shade600,
-                        size: 50,
+                      child: Image.asset(
+                        imageAsset,
+                        fit: BoxFit.contain,
+                        width: 80,
+                        height: 80,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.image,
+                          color: Colors.grey.shade600,
+                          size: 50,
+                        ),
                       ),
                     ),
                   ),
@@ -126,7 +132,7 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(height: 40),
                         _buildCircleButton(
                           context,
-                          outerColor: Colors.grey.shade400,
+                          outerColor: AppColors.primary,
                           imageAsset: 'assets/imgs/results.png',
                           label: 'Resultados',
                           onTap: () {},

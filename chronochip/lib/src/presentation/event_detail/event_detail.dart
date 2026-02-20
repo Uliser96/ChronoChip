@@ -127,8 +127,11 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                 final id = selected?.id ?? 0;
                                 Navigator.pushNamed(
                                   context,
-                                  Routers.raceRegistration,
-                                  arguments: id,
+                                  Routers.registration,
+                                  arguments: {
+                                    'eventId': id,
+                                    'allowTshirtSize': true,
+                                  },
                                 );
                               },
                       ),
