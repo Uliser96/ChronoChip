@@ -59,7 +59,7 @@ class PagoPendientePage extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 28.0),
               child: Text(
-                'Estamos procesando la informacion de tu pago, te avisaremos cuando se complete.',
+                'Estamos procesando la información de tu pago, te avisaremos cuando se complete.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, color: Colors.black45),
               ),
