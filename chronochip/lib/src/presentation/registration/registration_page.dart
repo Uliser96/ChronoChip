@@ -9,6 +9,7 @@ import 'package:chronochip/src/core/models/states_response/datum.dart';
 import 'package:chronochip/src/core/models/tshirt_sizes_response/datum.dart'
     as TshirtDatum;
 import 'package:chronochip/src/core/services/api/api_service.dart';
+import 'package:chronochip/src/core/models/runner_response.dart';
 import 'package:chronochip/src/core/models/race_registration_response/race_registration_response.dart';
 import 'package:chronochip/src/core/routers/routers.dart';
 
@@ -36,6 +37,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
   late TextEditingController _emergencyPhoneController;
   late TextEditingController _cityController;
   String? _selectedRunner;
+  List<Runner> _runners = [];
+  int _selectedRunnerId = 0;
   Gender? _selectedSex;
   late RegistrationBloc _bloc;
   Datum? _selectedState;
@@ -84,6 +87,21 @@ class _RegistrationPageState extends State<RegistrationPage> {
     _emergencyPhoneController = TextEditingController();
     _cityController = TextEditingController();
     _dobController = TextEditingController();
+    // load runners for the dropdown
+    _fetchRunners();
+  }
+
+  Future<void> _fetchRunners() async {
+    try {
+      final api = ApiService();
+      final runners = await api.getRunners();
+      if (!mounted) return;
+      setState(() {
+        _runners = runners;
+      });
+    } catch (e) {
+      debugPrint('Error fetching runners: $e');
+    }
   }
 
   @override
@@ -184,8 +202,57 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                         style: TextStyle(color: Colors.white70),
                                       ),
                                       value: _selectedRunner,
-                                      items: const [],
-                                      onChanged: null,
+                                      items: _runners
+                                          .map(
+                                            (r) => DropdownMenuItem<String>(
+                                              value: r.id.toString(),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 14,
+                                                      vertical: 12,
+                                                    ),
+                                                child: Text(
+                                                  '${r.firstName} ${r.lastName}',
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: _runners.isEmpty
+                                          ? null
+                                          : (String? val) {
+                                              setState(() {
+                                                _selectedRunner = val;
+                                                _selectedRunnerId =
+                                                    int.tryParse(val ?? '') ??
+                                                    0;
+                                                if (_selectedRunnerId != 0) {
+                                                  final runner = _runners
+                                                      .firstWhere(
+                                                        (x) =>
+                                                            x.id ==
+                                                            _selectedRunnerId,
+                                                        orElse: () =>
+                                                            _runners.first,
+                                                      );
+                                                  _nameController.text =
+                                                      runner.firstName;
+                                                  _surnameController.text =
+                                                      runner.lastName;
+                                                  _dobController.text =
+                                                      runner.birthdate;
+                                                  // Validate filled fields
+                                                  _isNameValid = true;
+                                                  _isSurnameValid = true;
+                                                  _isDobValid = true;
+                                                }
+                                              });
+                                            },
                                       style: const TextStyle(
                                         color: Colors.white,
                                       ),
@@ -1317,7 +1384,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                   );
                                               final resp = await api
                                                   .submitRaceRegistration(
-                                                    runnerId: 0,
+                                                    runnerId: _selectedRunnerId,
                                                     firstName: name,
                                                     lastName: surname,
                                                     birthdate: dob,
