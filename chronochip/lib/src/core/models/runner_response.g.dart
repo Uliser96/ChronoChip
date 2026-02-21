@@ -22,6 +22,13 @@ Runner _$RunnerFromJson(Map<String, dynamic> json) => Runner(
   firstName: json['firstName'] as String,
   lastName: json['lastName'] as String,
   birthdate: json['birthdate'] as String,
+  genderId: json['genderId'] as int,
+  email: json['email'] as String,
+  phone: json['phone'] as String,
+  stateId: json['stateId'] as int,
+  city: json['city'] as String,
+  emergencyPhone: json['emergencyPhone'] as String,
+  teamName: json['teamName'] as String,
 );
 
 Map<String, dynamic> _$RunnerToJson(Runner instance) => <String, dynamic>{
@@ -29,4 +36,11 @@ Map<String, dynamic> _$RunnerToJson(Runner instance) => <String, dynamic>{
   'firstName': instance.firstName,
   'lastName': instance.lastName,
   'birthdate': instance.birthdate,
+  'genderId': instance.genderId,
+  'email': instance.email,
+  'phone': instance.phone,
+  'stateId': instance.stateId,
+  'city': instance.city,
+  'emergencyPhone': instance.emergencyPhone,
+  'teamName': instance.teamName,
 };

@@ -64,6 +64,49 @@ class _RegistrationPageState extends State<RegistrationPage> {
   bool _isCategoryValid = true;
   bool _isJerseyValid = true;
 
+  void _resetForm() {
+    // Reset controllers
+    _nameController.clear();
+    _surnameController.clear();
+    _teamController.clear();
+    _dobController.clear();
+    _emailController.clear();
+    _phoneController.clear();
+    _emergencyPhoneController.clear();
+    _cityController.clear();
+
+    // Reset selections
+    setState(() {
+      _selectedRunner = null;
+      _selectedSelfRunner = null;
+      _isSelfRegistration = false;
+      _selectedRunnerId = 0;
+      _selectedSex = null;
+      _selectedState = null;
+      _selectedCategory = null;
+      _selectedJersey = null;
+      _isConfirmed = false;
+
+      // Reset validation flags to defaults
+      _isEmailValid = true;
+      _isNameValid = true;
+      _isSurnameValid = true;
+      _isDobValid = true;
+      _isPhoneValid = true;
+      _isEmergencyPhoneValid = true;
+      _isCityValid = true;
+      _isSexValid = true;
+      _isStateValid = true;
+      _isCategoryValid = true;
+      _isJerseyValid = true;
+    });
+
+    // Re-fetch static lists to ensure consistent state
+    _bloc.add(const FetchGendersRequested());
+    _bloc.add(const FetchStatesRequested());
+    _bloc.add(const FetchRunnersRequested());
+  }
+
   bool _isEmailFormatValid(String email) {
     final emailRegex = RegExp(r'^[\w\-.]+@([\w-]+\.)+[\w-]{2,}$');
     return emailRegex.hasMatch(email);
@@ -147,16 +190,34 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  Text(
-                                    'Inscripción a carrera',
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Inscripción a carrera',
+                                          textAlign: TextAlign.center,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleLarge
+                                              ?.copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w700,
+                                              ),
                                         ),
+                                      ),
+                                      // Clean/reset button (icon only)
+                                      IconButton(
+                                        padding: const EdgeInsets.all(4),
+                                        constraints: const BoxConstraints(),
+                                        icon: const Icon(
+                                          Icons.cleaning_services_outlined,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: _resetForm,
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(height: 16),
                                   //self runner
@@ -319,11 +380,116 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                         _dobController.text =
                                                             runner.birthdate;
                                                         // Validate filled fields
+                                                        _emailController.text =
+                                                            runner.email;
+                                                        _phoneController.text =
+                                                            runner.phone;
+                                                        _emergencyPhoneController
+                                                            .text = runner
+                                                            .emergencyPhone;
+                                                        _cityController.text =
+                                                            runner.city;
+                                                        _teamController.text =
+                                                            runner.teamName;
+                                                        // Mark newly filled fields as valid when possible
+                                                        _isEmailValid =
+                                                            _isEmailFormatValid(
+                                                              runner.email,
+                                                            );
+                                                        final phoneTrim = runner
+                                                            .phone
+                                                            .trim();
+                                                        _isPhoneValid =
+                                                            phoneTrim.length ==
+                                                            10;
+                                                        final emergTrim = runner
+                                                            .emergencyPhone
+                                                            .trim();
+                                                        _isEmergencyPhoneValid =
+                                                            emergTrim.length ==
+                                                            10;
+                                                        _isCityValid =
+                                                            (runner.city)
+                                                                .trim()
+                                                                .isNotEmpty;
+                                                        final matched = state
+                                                            .genders
+                                                            .where(
+                                                              (g) =>
+                                                                  g.id ==
+                                                                  runner
+                                                                      .genderId,
+                                                            )
+                                                            .toList();
+                                                        _selectedSex =
+                                                            matched.isNotEmpty
+                                                            ? matched.first
+                                                            : null;
+                                                        _isSexValid =
+                                                            _selectedSex !=
+                                                            null;
+                                                        final matchedState = state
+                                                            .states
+                                                            .where(
+                                                              (s) =>
+                                                                  s.id ==
+                                                                  runner
+                                                                      .stateId,
+                                                            )
+                                                            .toList();
+                                                        _selectedState =
+                                                            matchedState
+                                                                .isNotEmpty
+                                                            ? matchedState.first
+                                                            : null;
+                                                        _isStateValid =
+                                                            _selectedState !=
+                                                            null;
                                                         _isNameValid = true;
                                                         _isSurnameValid = true;
                                                         _isDobValid = true;
+                                                        _isSexValid = true;
+                                                        _isEmailValid = true;
+                                                        _isPhoneValid = true;
+                                                        _isEmergencyPhoneValid =
+                                                            true;
+                                                        _isCityValid = true;
+                                                        _isStateValid = true;
                                                       }
                                                     });
+                                                    // After populating runner info, request tshirt sizes and categories
+                                                    if (_selectedSex != null) {
+                                                      _bloc.add(
+                                                        FetchTshirtSizesRequested(
+                                                          eventId:
+                                                              widget.eventId,
+                                                          genderId:
+                                                              _selectedSex!.id,
+                                                        ),
+                                                      );
+                                                    }
+                                                    if (_selectedSex != null &&
+                                                        _dobController
+                                                            .text
+                                                            .isNotEmpty) {
+                                                      setState(() {
+                                                        _hasRequestedCategories =
+                                                            true;
+                                                        _hasShownNoCategoriesDialog =
+                                                            false;
+                                                      });
+                                                      _bloc.add(
+                                                        FetchCategoriesRequested(
+                                                          eventId:
+                                                              widget.eventId,
+                                                          genderId:
+                                                              _selectedSex!.id,
+                                                          birthdate:
+                                                              _dobController
+                                                                  .text,
+                                                        ),
+                                                      );
+                                                    }
                                                   },
                                             style: const TextStyle(
                                               color: Colors.white,
@@ -1116,51 +1282,75 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                     color: Colors.white70,
                                                   ),
                                                 ),
-                                                // compute category id string using eventCategoryId when available
-                                                value:
-                                                    _selectedCategory != null &&
-                                                        state.categories.any((
-                                                          c,
-                                                        ) {
-                                                          final idStr =
-                                                              (c.eventCategoryId !=
-                                                                          0
-                                                                      ? c.eventCategoryId
-                                                                      : c.id)
-                                                                  .toString();
-                                                          return idStr ==
-                                                              _selectedCategory;
-                                                        })
-                                                    ? _selectedCategory
-                                                    : null,
-                                                items: state.categories.map((
-                                                  c,
-                                                ) {
-                                                  final idStr =
-                                                      (c.eventCategoryId != 0
-                                                              ? c.eventCategoryId
-                                                              : c.id)
-                                                          .toString();
-                                                  return DropdownMenuItem<
-                                                    String
-                                                  >(
-                                                    value: idStr,
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 14,
-                                                            vertical: 12,
-                                                          ),
-                                                      child: Text(
-                                                        c.displayName,
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 16,
+                                                // build unique category items keyed by computed idStr to avoid duplicates
+                                                value: () {
+                                                  final Map<String, dynamic>
+                                                  unique = {};
+                                                  for (final c
+                                                      in state.categories) {
+                                                    final idStr =
+                                                        (c.eventCategoryId != 0
+                                                                ? c.eventCategoryId
+                                                                : c.id)
+                                                            .toString();
+                                                    if (!unique.containsKey(
+                                                      idStr,
+                                                    )) {
+                                                      unique[idStr] = c;
+                                                    }
+                                                  }
+                                                  return _selectedCategory !=
+                                                              null &&
+                                                          unique.containsKey(
+                                                            _selectedCategory,
+                                                          )
+                                                      ? _selectedCategory
+                                                      : null;
+                                                }(),
+                                                items: () {
+                                                  final Map<String, dynamic>
+                                                  unique = {};
+                                                  for (final c
+                                                      in state.categories) {
+                                                    final idStr =
+                                                        (c.eventCategoryId != 0
+                                                                ? c.eventCategoryId
+                                                                : c.id)
+                                                            .toString();
+                                                    if (!unique.containsKey(
+                                                      idStr,
+                                                    )) {
+                                                      unique[idStr] = c;
+                                                    }
+                                                  }
+                                                  return unique.entries.map((
+                                                    e,
+                                                  ) {
+                                                    final idStr = e.key;
+                                                    final c = e.value;
+                                                    return DropdownMenuItem<
+                                                      String
+                                                    >(
+                                                      value: idStr,
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 14,
+                                                              vertical: 12,
+                                                            ),
+                                                        child: Text(
+                                                          c.displayName,
+                                                          style:
+                                                              const TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize: 16,
+                                                              ),
                                                         ),
                                                       ),
-                                                    ),
-                                                  );
-                                                }).toList(),
+                                                    );
+                                                  }).toList();
+                                                }(),
                                                 onChanged:
                                                     state.categories.isEmpty
                                                     ? null
@@ -1245,39 +1435,75 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                       color: Colors.white70,
                                                     ),
                                                   ),
-                                                  value: _selectedJersey,
-                                                  items: state.tshirtSizes.map((
-                                                    d,
-                                                  ) {
-                                                    final idStr =
-                                                        d.id?.toString() ?? '';
-                                                    final label =
-                                                        d
-                                                            .tshirtSize
-                                                            ?.description ??
-                                                        '';
-                                                    return DropdownMenuItem<
-                                                      String
-                                                    >(
-                                                      value: idStr,
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets.symmetric(
-                                                              horizontal: 14,
-                                                              vertical: 12,
-                                                            ),
-                                                        child: Text(
-                                                          label,
-                                                          style:
-                                                              const TextStyle(
-                                                                color: Colors
-                                                                    .white,
-                                                                fontSize: 16,
+                                                  value: () {
+                                                    final Map<String, dynamic>
+                                                    unique = {};
+                                                    for (final d
+                                                        in state.tshirtSizes) {
+                                                      final idStr =
+                                                          d.id?.toString() ??
+                                                          '';
+                                                      if (!unique.containsKey(
+                                                        idStr,
+                                                      )) {
+                                                        unique[idStr] = d;
+                                                      }
+                                                    }
+                                                    return _selectedJersey !=
+                                                                null &&
+                                                            unique.containsKey(
+                                                              _selectedJersey,
+                                                            )
+                                                        ? _selectedJersey
+                                                        : null;
+                                                  }(),
+                                                  items: () {
+                                                    final Map<String, dynamic>
+                                                    unique = {};
+                                                    for (final d
+                                                        in state.tshirtSizes) {
+                                                      final idStr =
+                                                          d.id?.toString() ??
+                                                          '';
+                                                      if (!unique.containsKey(
+                                                        idStr,
+                                                      )) {
+                                                        unique[idStr] = d;
+                                                      }
+                                                    }
+                                                    return unique.entries.map((
+                                                      e,
+                                                    ) {
+                                                      final idStr = e.key;
+                                                      final d = e.value;
+                                                      final label =
+                                                          d
+                                                              .tshirtSize
+                                                              ?.description ??
+                                                          '';
+                                                      return DropdownMenuItem<
+                                                        String
+                                                      >(
+                                                        value: idStr,
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                horizontal: 14,
+                                                                vertical: 12,
                                                               ),
+                                                          child: Text(
+                                                            label,
+                                                            style:
+                                                                const TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize: 16,
+                                                                ),
+                                                          ),
                                                         ),
-                                                      ),
-                                                    );
-                                                  }).toList(),
+                                                      );
+                                                    }).toList();
+                                                  }(),
                                                   onChanged:
                                                       state.tshirtSizes.isEmpty
                                                       ? null
