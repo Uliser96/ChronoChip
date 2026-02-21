@@ -430,24 +430,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                               );
                                             });
                                       }
-
-                                      // Log when categories finish loading (may run multiple times)
-                                      if (!state.isLoadingCategories &&
-                                          state.categories.isNotEmpty) {
-                                        try {
-                                          debugPrint(
-                                            'RegistrationPage: categories loaded (${state.categories.length}): ' +
-                                                state.categories
-                                                    .map(
-                                                      (c) =>
-                                                          '${c.displayName}:${c.eventCategoryId}',
-                                                    )
-                                                    .toList()
-                                                    .toString(),
-                                          );
-                                        } catch (_) {}
-                                      }
-
                                       return Container(
                                         height: 48,
                                         alignment: Alignment.centerLeft,

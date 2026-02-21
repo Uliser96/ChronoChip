@@ -130,7 +130,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                   Routers.registration,
                                   arguments: {
                                     'eventId': id,
-                                    'allowTshirtSize': true,
+                                    'allowTshirtSize':
+                                        selected?.allowTshirtSize,
                                   },
                                 );
                               },

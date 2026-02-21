@@ -8,6 +8,7 @@ class Row {
   String? location;
   int? maxParticipants;
   bool? finished;
+  bool? allowTshirtSize;
 
   Row({
     this.id,
@@ -17,11 +18,12 @@ class Row {
     this.location,
     this.maxParticipants,
     this.finished,
+    this.allowTshirtSize,
   });
 
   @override
   String toString() {
-    return 'Row(id: $id, name: $name, coverImageUrl: $coverImageUrl, date: $date, location: $location, maxParticipants: $maxParticipants, finished: $finished)';
+    return 'Row(id: $id, name: $name, coverImageUrl: $coverImageUrl, date: $date, location: $location, maxParticipants: $maxParticipants, finished: $finished, allowTshirtSize: $allowTshirtSize)';
   }
 
   factory Row.fromMap(Map<String, dynamic> data) => Row(
@@ -32,6 +34,7 @@ class Row {
     location: data['location'] as String?,
     maxParticipants: data['maxParticipants'] as int?,
     finished: data['finished'] as bool?,
+    allowTshirtSize: data['allowTshirtSize'] as bool?,
   );
 
   Map<String, dynamic> toMap() => {
@@ -42,6 +45,7 @@ class Row {
     'location': location,
     'maxParticipants': maxParticipants,
     'finished': finished,
+    'allowTshirtSize': allowTshirtSize,
   };
 
   /// `dart:convert`
@@ -64,6 +68,7 @@ class Row {
     String? location,
     int? maxParticipants,
     bool? finished,
+    bool? allowTshirtSize,
   }) {
     return Row(
       id: id ?? this.id,
@@ -73,6 +78,7 @@ class Row {
       location: location ?? this.location,
       maxParticipants: maxParticipants ?? this.maxParticipants,
       finished: finished ?? this.finished,
+      allowTshirtSize: allowTshirtSize ?? this.allowTshirtSize,
     );
   }
 }
