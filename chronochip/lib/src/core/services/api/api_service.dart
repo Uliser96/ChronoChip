@@ -292,9 +292,13 @@ class ApiService {
   /// Obtiene las tallas de jersey para un evento específico
   Future<TshirtSizesResponse> getEventTshirtSizes({
     required int eventId,
+    required int genderId,
   }) async {
     try {
-      final response = await _apiClient.get('api/events/$eventId/tshirt-sizes');
+      final response = await _apiClient.post(
+        'api/events/$eventId/tshirt-sizes',
+        body: {'genderId': genderId},
+      );
       return TshirtSizesResponse.fromMap(response as Map<String, dynamic>);
     } catch (e) {
       if (e is ApiException) rethrow;

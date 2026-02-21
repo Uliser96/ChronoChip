@@ -49,6 +49,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
     try {
       final resp = await _apiService.getEventTshirtSizes(
         eventId: event.eventId,
+        genderId: event.genderId,
       );
       final tshirtData = resp.data ?? [];
       emit(

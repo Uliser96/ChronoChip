@@ -38,6 +38,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
   late TextEditingController _cityController;
   String? _selectedRunner;
   List<Runner> _runners = [];
+  final List<String> _self_runners = [];
+  String? _selectedSelfRunner;
+  bool _isSelfRegistration = false;
   int _selectedRunnerId = 0;
   Gender? _selectedSex;
   late RegistrationBloc _bloc;
@@ -70,15 +73,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
   @override
   void initState() {
     super.initState();
-    debugPrint(
-      'RegistrationPage opened: allowTshirtSize=${widget.allowTshirtSize}, eventId=${widget.eventId}',
-    );
     _bloc = RegistrationBloc();
     _bloc.add(const FetchGendersRequested());
     _bloc.add(const FetchStatesRequested());
-    if (widget.allowTshirtSize) {
-      _bloc.add(FetchTshirtSizesRequested(eventId: widget.eventId));
-    }
+    _self_runners.addAll(['Yo mismo', 'Otra persona']);
     _nameController = TextEditingController();
     _surnameController = TextEditingController();
     _teamController = TextEditingController();
@@ -176,8 +174,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                         ),
                                   ),
                                   const SizedBox(height: 16),
-
-                                  // Corredores dropdown
+                                  //self runner
                                   Container(
                                     height: 48,
                                     alignment: Alignment.centerLeft,
@@ -198,14 +195,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                       isExpanded: true,
                                       underline: const SizedBox.shrink(),
                                       hint: const Text(
-                                        'corredores',
+                                        'Quién se inscribe',
                                         style: TextStyle(color: Colors.white70),
                                       ),
-                                      value: _selectedRunner,
-                                      items: _runners
+                                      value: _selectedSelfRunner,
+                                      items: _self_runners
                                           .map(
                                             (r) => DropdownMenuItem<String>(
-                                              value: r.id.toString(),
+                                              value: r,
                                               child: Padding(
                                                 padding:
                                                     const EdgeInsets.symmetric(
@@ -213,7 +210,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                       vertical: 12,
                                                     ),
                                                 child: Text(
-                                                  '${r.firstName} ${r.lastName}',
+                                                  r,
                                                   style: const TextStyle(
                                                     color: Colors.white,
                                                     fontSize: 16,
@@ -223,36 +220,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                             ),
                                           )
                                           .toList(),
-                                      onChanged: _runners.isEmpty
-                                          ? null
-                                          : (String? val) {
-                                              setState(() {
-                                                _selectedRunner = val;
-                                                _selectedRunnerId =
-                                                    int.tryParse(val ?? '') ??
-                                                    0;
-                                                if (_selectedRunnerId != 0) {
-                                                  final runner = _runners
-                                                      .firstWhere(
-                                                        (x) =>
-                                                            x.id ==
-                                                            _selectedRunnerId,
-                                                        orElse: () =>
-                                                            _runners.first,
-                                                      );
-                                                  _nameController.text =
-                                                      runner.firstName;
-                                                  _surnameController.text =
-                                                      runner.lastName;
-                                                  _dobController.text =
-                                                      runner.birthdate;
-                                                  // Validate filled fields
-                                                  _isNameValid = true;
-                                                  _isSurnameValid = true;
-                                                  _isDobValid = true;
-                                                }
-                                              });
-                                            },
+                                      onChanged: (String? val) {
+                                        if (val == _self_runners[0]) {
+                                          //consultar servicio y deshabilitar todos los campos
+                                          //deshabilitar todos los campos
+                                        } else {}
+                                        setState(() {
+                                          _selectedSelfRunner = val;
+                                          _isSelfRegistration =
+                                              val == _self_runners[0];
+                                          //exec service, fill ruuner info with response and set validation flags
+                                        });
+                                      },
                                       style: const TextStyle(
                                         color: Colors.white,
                                       ),
@@ -265,6 +244,98 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                     ),
                                   ),
                                   const SizedBox(height: 12),
+                                  if (!_isSelfRegistration) ...[
+                                    // Corredores dropdown
+                                    Container(
+                                      height: 48,
+                                      alignment: Alignment.centerLeft,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromRGBO(
+                                          255,
+                                          255,
+                                          255,
+                                          0.18,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: DropdownButton<String>(
+                                        isExpanded: true,
+                                        underline: const SizedBox.shrink(),
+                                        hint: const Text(
+                                          'corredores',
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                          ),
+                                        ),
+                                        value: _selectedRunner,
+                                        items: _runners
+                                            .map(
+                                              (r) => DropdownMenuItem<String>(
+                                                value: r.id.toString(),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 14,
+                                                        vertical: 12,
+                                                      ),
+                                                  child: Text(
+                                                    '${r.firstName} ${r.lastName}',
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                            .toList(),
+                                        onChanged: _runners.isEmpty
+                                            ? null
+                                            : (String? val) {
+                                                setState(() {
+                                                  _selectedRunner = val;
+                                                  _selectedRunnerId =
+                                                      int.tryParse(val ?? '') ??
+                                                      0;
+                                                  if (_selectedRunnerId != 0) {
+                                                    final runner = _runners
+                                                        .firstWhere(
+                                                          (x) =>
+                                                              x.id ==
+                                                              _selectedRunnerId,
+                                                          orElse: () =>
+                                                              _runners.first,
+                                                        );
+                                                    _nameController.text =
+                                                        runner.firstName;
+                                                    _surnameController.text =
+                                                        runner.lastName;
+                                                    _dobController.text =
+                                                        runner.birthdate;
+                                                    // Validate filled fields
+                                                    _isNameValid = true;
+                                                    _isSurnameValid = true;
+                                                    _isDobValid = true;
+                                                  }
+                                                });
+                                              },
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                        dropdownColor: const Color.fromRGBO(
+                                          241,
+                                          136,
+                                          0,
+                                          0.9,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                  ],
 
                                   // Nombre
                                   TextField(
@@ -467,6 +538,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                                   setState(() {
                                                     _selectedSex = val;
                                                     _isSexValid = true;
+                                                    _bloc.add(
+                                                      FetchTshirtSizesRequested(
+                                                        eventId: widget.eventId,
+                                                        genderId:
+                                                            _selectedSex!.id,
+                                                      ),
+                                                    );
                                                     // reset selected category when sex changes
                                                     _selectedCategory = null;
                                                     _isCategoryValid = true;
