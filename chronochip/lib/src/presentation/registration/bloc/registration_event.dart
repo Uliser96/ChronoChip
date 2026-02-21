@@ -15,6 +15,10 @@ class FetchStatesRequested extends RegistrationEvent {
   const FetchStatesRequested();
 }
 
+class FetchRunnersRequested extends RegistrationEvent {
+  const FetchRunnersRequested();
+}
+
 class FetchTshirtSizesRequested extends RegistrationEvent {
   final int eventId;
   final int genderId;

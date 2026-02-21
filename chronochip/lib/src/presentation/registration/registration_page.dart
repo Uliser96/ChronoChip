@@ -37,7 +37,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
   late TextEditingController _emergencyPhoneController;
   late TextEditingController _cityController;
   String? _selectedRunner;
-  List<Runner> _runners = [];
   final List<String> _self_runners = [];
   String? _selectedSelfRunner;
   bool _isSelfRegistration = false;
@@ -76,6 +75,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     _bloc = RegistrationBloc();
     _bloc.add(const FetchGendersRequested());
     _bloc.add(const FetchStatesRequested());
+    _bloc.add(const FetchRunnersRequested());
     _self_runners.addAll(['Yo mismo', 'Otra persona']);
     _nameController = TextEditingController();
     _surnameController = TextEditingController();
@@ -85,21 +85,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
     _emergencyPhoneController = TextEditingController();
     _cityController = TextEditingController();
     _dobController = TextEditingController();
-    // load runners for the dropdown
-    _fetchRunners();
-  }
-
-  Future<void> _fetchRunners() async {
-    try {
-      final api = ApiService();
-      final runners = await api.getRunners();
-      if (!mounted) return;
-      setState(() {
-        _runners = runners;
-      });
-    } catch (e) {
-      debugPrint('Error fetching runners: $e');
-    }
   }
 
   @override
@@ -246,94 +231,114 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   const SizedBox(height: 12),
                                   if (!_isSelfRegistration) ...[
                                     // Corredores dropdown
-                                    Container(
-                                      height: 48,
-                                      alignment: Alignment.centerLeft,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color.fromRGBO(
-                                          255,
-                                          255,
-                                          255,
-                                          0.18,
-                                        ),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: DropdownButton<String>(
-                                        isExpanded: true,
-                                        underline: const SizedBox.shrink(),
-                                        hint: const Text(
-                                          'corredores',
-                                          style: TextStyle(
-                                            color: Colors.white70,
+                                    const SizedBox(height: 8),
+                                    BlocBuilder<
+                                      RegistrationBloc,
+                                      RegistrationState
+                                    >(
+                                      builder: (context, state) {
+                                        return Container(
+                                          height: 48,
+                                          alignment: Alignment.centerLeft,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
                                           ),
-                                        ),
-                                        value: _selectedRunner,
-                                        items: _runners
-                                            .map(
-                                              (r) => DropdownMenuItem<String>(
-                                                value: r.id.toString(),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 14,
-                                                        vertical: 12,
+                                          decoration: BoxDecoration(
+                                            color: const Color.fromRGBO(
+                                              255,
+                                              255,
+                                              255,
+                                              0.18,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: DropdownButton<String>(
+                                            isExpanded: true,
+                                            underline: const SizedBox.shrink(),
+                                            hint: const Text(
+                                              'corredores',
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                              ),
+                                            ),
+                                            value: _selectedRunner,
+                                            items: state.runners
+                                                .map(
+                                                  (
+                                                    r,
+                                                  ) => DropdownMenuItem<String>(
+                                                    value: r.id.toString(),
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 14,
+                                                            vertical: 12,
+                                                          ),
+                                                      child: Text(
+                                                        '${r.firstName} ${r.lastName}',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 16,
+                                                        ),
                                                       ),
-                                                  child: Text(
-                                                    '${r.firstName} ${r.lastName}',
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 16,
                                                     ),
                                                   ),
-                                                ),
-                                              ),
-                                            )
-                                            .toList(),
-                                        onChanged: _runners.isEmpty
-                                            ? null
-                                            : (String? val) {
-                                                setState(() {
-                                                  _selectedRunner = val;
-                                                  _selectedRunnerId =
-                                                      int.tryParse(val ?? '') ??
-                                                      0;
-                                                  if (_selectedRunnerId != 0) {
-                                                    final runner = _runners
-                                                        .firstWhere(
-                                                          (x) =>
-                                                              x.id ==
-                                                              _selectedRunnerId,
-                                                          orElse: () =>
-                                                              _runners.first,
-                                                        );
-                                                    _nameController.text =
-                                                        runner.firstName;
-                                                    _surnameController.text =
-                                                        runner.lastName;
-                                                    _dobController.text =
-                                                        runner.birthdate;
-                                                    // Validate filled fields
-                                                    _isNameValid = true;
-                                                    _isSurnameValid = true;
-                                                    _isDobValid = true;
-                                                  }
-                                                });
-                                              },
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                        dropdownColor: const Color.fromRGBO(
-                                          241,
-                                          136,
-                                          0,
-                                          0.9,
-                                        ),
-                                      ),
+                                                )
+                                                .toList(),
+                                            onChanged: state.runners.isEmpty
+                                                ? null
+                                                : (String? val) {
+                                                    setState(() {
+                                                      _selectedRunner = val;
+                                                      _selectedRunnerId =
+                                                          int.tryParse(
+                                                            val ?? '',
+                                                          ) ??
+                                                          0;
+                                                      if (_selectedRunnerId !=
+                                                          0) {
+                                                        final runner = state
+                                                            .runners
+                                                            .firstWhere(
+                                                              (x) =>
+                                                                  x.id ==
+                                                                  _selectedRunnerId,
+                                                              orElse: () =>
+                                                                  state
+                                                                      .runners
+                                                                      .first,
+                                                            );
+                                                        _nameController.text =
+                                                            runner.firstName;
+                                                        _surnameController
+                                                                .text =
+                                                            runner.lastName;
+                                                        _dobController.text =
+                                                            runner.birthdate;
+                                                        // Validate filled fields
+                                                        _isNameValid = true;
+                                                        _isSurnameValid = true;
+                                                        _isDobValid = true;
+                                                      }
+                                                    });
+                                                  },
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                            dropdownColor: const Color.fromRGBO(
+                                              241,
+                                              136,
+                                              0,
+                                              0.9,
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
+
                                     const SizedBox(height: 12),
                                   ],
 

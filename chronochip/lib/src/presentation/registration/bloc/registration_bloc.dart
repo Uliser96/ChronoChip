@@ -13,6 +13,19 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
     on<FetchStatesRequested>(_onFetchStatesRequested);
     on<FetchTshirtSizesRequested>(_onFetchTshirtSizesRequested);
     on<FetchCategoriesRequested>(_onFetchCategoriesRequested);
+    on<FetchRunnersRequested>(_onFetchRunnersRequested);
+  }
+  Future<void> _onFetchRunnersRequested(
+    FetchRunnersRequested event,
+    Emitter<RegistrationState> emit,
+  ) async {
+    emit(state.copyWith(isLoading: true, error: null));
+    try {
+      final runners = await _apiService.getRunners();
+      emit(state.copyWith(isLoading: false, runners: runners));
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, error: e.toString()));
+    }
   }
 
   Future<void> _onFetchGendersRequested(
