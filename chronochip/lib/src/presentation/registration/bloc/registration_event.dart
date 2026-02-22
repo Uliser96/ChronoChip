@@ -46,3 +46,7 @@ class FetchCategoriesRequested extends RegistrationEvent {
   @override
   List<Object?> get props => [eventId, genderId, birthdate];
 }
+
+class FetchSelfInformationRequested extends RegistrationEvent {
+  const FetchSelfInformationRequested();
+}

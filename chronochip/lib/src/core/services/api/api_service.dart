@@ -1,5 +1,7 @@
 import 'package:chronochip/src/core/models/login_response.dart' hide Gender;
 import 'package:chronochip/src/core/models/gender_response.dart';
+import 'package:chronochip/src/core/models/self_information_response/self_information_response.dart'
+    show SelfInformationResponse;
 import 'package:chronochip/src/core/models/states_response/states_response.dart';
 import 'package:chronochip/src/core/models/states_response/datum.dart';
 import 'package:chronochip/src/core/models/runner_response.dart';
@@ -320,6 +322,18 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw Exception('Error al obtener perfil: $e');
+    }
+  }
+
+  /// Obtiene la información del usuario 'Yo mismo' para prellenar la inscripción
+  Future<SelfInformationResponse> getSelfRegistration() async {
+    try {
+      final response = await _apiClient.get('api/race-registration/self');
+      final map = response as Map<String, dynamic>;
+      return SelfInformationResponse.fromMap(map);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al obtener self registration: $e');
     }
   }
 

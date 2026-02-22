@@ -5,6 +5,7 @@ import 'package:chronochip/src/core/models/tshirt_sizes_response/datum.dart'
     as TshirtDatum;
 import 'package:chronochip/src/core/models/event_category.dart';
 import 'package:equatable/equatable.dart';
+import 'package:chronochip/src/core/models/self_information_response/self_information_response.dart';
 
 class RegistrationState extends Equatable {
   final bool isLoading;
@@ -16,6 +17,7 @@ class RegistrationState extends Equatable {
   final bool isLoadingTshirtSizes;
   final bool isLoadingCategories;
   final String? error;
+  final SelfInformationResponse? selfInformation;
 
   const RegistrationState({
     this.isLoading = false,
@@ -27,6 +29,7 @@ class RegistrationState extends Equatable {
     this.isLoadingTshirtSizes = false,
     this.isLoadingCategories = false,
     this.error,
+    this.selfInformation,
   });
 
   RegistrationState copyWith({
@@ -39,6 +42,7 @@ class RegistrationState extends Equatable {
     bool? isLoadingTshirtSizes,
     bool? isLoadingCategories,
     String? error,
+    SelfInformationResponse? selfInformation,
   }) {
     return RegistrationState(
       isLoading: isLoading ?? this.isLoading,
@@ -50,6 +54,7 @@ class RegistrationState extends Equatable {
       isLoadingTshirtSizes: isLoadingTshirtSizes ?? this.isLoadingTshirtSizes,
       isLoadingCategories: isLoadingCategories ?? this.isLoadingCategories,
       error: error,
+      selfInformation: selfInformation ?? this.selfInformation,
     );
   }
 
@@ -64,5 +69,6 @@ class RegistrationState extends Equatable {
     categories,
     isLoadingCategories,
     error,
+    selfInformation,
   ];
 }
