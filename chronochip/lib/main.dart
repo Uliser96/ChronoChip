@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'package:chronochip/firebase_options.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';
 import 'package:chronochip/src/core/routers/routers.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -27,6 +31,16 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initDeepLinks() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+    await analytics.logEvent(
+      name: 'app_opened',
+      parameters: {'timestamp': DateTime.now().toIso8601String()},
+    );
     _appLinks = AppLinks();
 
     // Maneja el link que abrió la app cuando estaba cerrada
