@@ -38,199 +38,236 @@ class InformationConfirmationPage extends StatelessWidget {
       );
     }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F6F8),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/imgs/main_background.png',
-              fit: BoxFit.cover,
+    return WillPopScope(
+      onWillPop: () async {
+        final shouldLeave = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Advertencia'),
+            content: const Text(
+              'Todos los datos se perderán y necesitarás volver a ingresarlos. ¿Deseas salir?',
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('No'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('Sí'),
+              ),
+            ],
           ),
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: SafeArea(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 520),
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 6,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Confirma la información de tu registro',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 14),
+        );
 
-                                // Campos del modelo (si están disponibles)
-                                buildLine(
-                                  'Nombres:',
-                                  raceRegistration
-                                          ?.data
-                                          ?.runnerData
-                                          ?.firstName ??
-                                      '-',
-                                ),
-                                buildLine(
-                                  'Apellidos:',
-                                  raceRegistration
-                                          ?.data
-                                          ?.runnerData
-                                          ?.lastName ??
-                                      '-',
-                                ),
-                                buildLine(
-                                  'Fecha de nacimiento:',
-                                  raceRegistration
-                                          ?.data
-                                          ?.runnerData
-                                          ?.birthdate ??
-                                      '-',
-                                ),
-                                buildLine(
-                                  'Email:',
-                                  raceRegistration?.data?.runnerData?.email ??
-                                      '-',
-                                ),
-                                buildLine(
-                                  'Teléfono:',
-                                  raceRegistration?.data?.runnerData?.phone ??
-                                      '-',
-                                ),
-                                buildLine(
-                                  'Estado:',
-                                  raceRegistration
-                                          ?.data
-                                          ?.runnerData
-                                          ?.state
-                                          ?.name ??
-                                      '-',
-                                ),
-                                buildLine(
-                                  'Evento:',
-                                  raceRegistration
-                                          ?.data
-                                          ?.eventCategory
-                                          ?.displayName ??
-                                      raceRegistration
-                                          ?.data
-                                          ?.eventCategory
-                                          ?.categoryName ??
-                                      '-',
-                                ),
-                                const Divider(),
-                                Text(
-                                  "INFORMACION DE PAGO",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.bold,
+        if (shouldLeave == true) {
+          // Close this page and also remove the registration page below it from the stack
+          // We pop twice: first to remove InformationConfirmationPage, then to remove RegistrationPage
+          // Return false to prevent the default pop (we already handled navigation)
+          if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+          if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+          return false;
+        }
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F6F8),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/imgs/main_background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: SafeArea(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 520),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 6,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Confirma la información de tu registro',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(height: 14),
 
-                                buildLine(
-                                  'Registro:',
-                                  raceRegistration?.data?.registrationCost ??
-                                      '-',
-                                ),
-                                buildLine(
-                                  'Comisión:',
-                                  raceRegistration
-                                          ?.data
-                                          ?.onlinePaymentCommission ??
-                                      '-',
-                                ),
-                                buildLine(
-                                  'Total:',
-                                  raceRegistration?.data?.totalAmount ?? '-',
-                                  isTotal: true,
-                                ),
-                                const SizedBox(height: 20),
-                                // Button
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    onPressed:
+                                  // Campos del modelo (si están disponibles)
+                                  buildLine(
+                                    'Nombres:',
+                                    raceRegistration
+                                            ?.data
+                                            ?.runnerData
+                                            ?.firstName ??
+                                        '-',
+                                  ),
+                                  buildLine(
+                                    'Apellidos:',
+                                    raceRegistration
+                                            ?.data
+                                            ?.runnerData
+                                            ?.lastName ??
+                                        '-',
+                                  ),
+                                  buildLine(
+                                    'Fecha de nacimiento:',
+                                    raceRegistration
+                                            ?.data
+                                            ?.runnerData
+                                            ?.birthdate ??
+                                        '-',
+                                  ),
+                                  buildLine(
+                                    'Email:',
+                                    raceRegistration?.data?.runnerData?.email ??
+                                        '-',
+                                  ),
+                                  buildLine(
+                                    'Teléfono:',
+                                    raceRegistration?.data?.runnerData?.phone ??
+                                        '-',
+                                  ),
+                                  buildLine(
+                                    'Estado:',
+                                    raceRegistration
+                                            ?.data
+                                            ?.runnerData
+                                            ?.state
+                                            ?.name ??
+                                        '-',
+                                  ),
+                                  buildLine(
+                                    'Evento:',
+                                    raceRegistration
+                                            ?.data
+                                            ?.eventCategory
+                                            ?.displayName ??
                                         raceRegistration
-                                                ?.data
-                                                ?.pendingRegistrationId ==
-                                            null
-                                        ? null
-                                        : () async {
-                                            // show loading
-                                            showDialog(
-                                              context: context,
-                                              barrierDismissible: false,
-                                              builder: (_) => const Center(
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              ),
-                                            );
+                                            ?.data
+                                            ?.eventCategory
+                                            ?.categoryName ??
+                                        '-',
+                                  ),
+                                  const Divider(),
+                                  Text(
+                                    "INFORMACION DE PAGO",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
 
-                                            try {
-                                              final service = ApiService();
-                                              final resp = await service
-                                                  .createPaymentPreference(
-                                                    pendingRegistrationId:
-                                                        raceRegistration
-                                                            ?.data
-                                                            ?.pendingRegistrationId,
-                                                  );
-
-                                              final url = resp.data?.paymentUrl;
-                                              _launchURL(context, url!);
-                                            } catch (e) {
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    'Error al generar el link de pago, contacte al administrador',
-                                                  ),
+                                  buildLine(
+                                    'Registro:',
+                                    raceRegistration?.data?.registrationCost ??
+                                        '-',
+                                  ),
+                                  buildLine(
+                                    'Comisión:',
+                                    raceRegistration
+                                            ?.data
+                                            ?.onlinePaymentCommission ??
+                                        '-',
+                                  ),
+                                  buildLine(
+                                    'Total:',
+                                    raceRegistration?.data?.totalAmount ?? '-',
+                                    isTotal: true,
+                                  ),
+                                  const SizedBox(height: 20),
+                                  // Button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton.icon(
+                                      onPressed:
+                                          raceRegistration
+                                                  ?.data
+                                                  ?.pendingRegistrationId ==
+                                              null
+                                          ? null
+                                          : () async {
+                                              // show loading
+                                              showDialog(
+                                                context: context,
+                                                barrierDismissible: false,
+                                                builder: (_) => const Center(
+                                                  child:
+                                                      CircularProgressIndicator(),
                                                 ),
                                               );
-                                            } finally {
-                                              // hide loading
-                                              if (Navigator.of(
-                                                context,
-                                              ).canPop())
-                                                Navigator.of(context).pop();
-                                            }
-                                          },
-                                    label: const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 14,
+
+                                              try {
+                                                final service = ApiService();
+                                                final resp = await service
+                                                    .createPaymentPreference(
+                                                      pendingRegistrationId:
+                                                          raceRegistration
+                                                              ?.data
+                                                              ?.pendingRegistrationId,
+                                                    );
+
+                                                final url =
+                                                    resp.data?.paymentUrl;
+                                                _launchURL(context, url!);
+                                              } catch (e) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      'Error al generar el link de pago, contacte al administrador',
+                                                    ),
+                                                  ),
+                                                );
+                                              } finally {
+                                                // hide loading
+                                                if (Navigator.of(
+                                                  context,
+                                                ).canPop())
+                                                  Navigator.of(context).pop();
+                                              }
+                                            },
+                                      label: const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 14,
+                                        ),
+                                        child: Text('Proceder al pago'),
                                       ),
-                                      child: Text('Proceder al pago'),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: orange,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: orange,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        elevation: 2,
                                       ),
-                                      elevation: 2,
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -240,8 +277,8 @@ class InformationConfirmationPage extends StatelessWidget {
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

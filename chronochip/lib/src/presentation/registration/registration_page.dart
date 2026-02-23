@@ -297,7 +297,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                       ],
                                     ),
                                     const SizedBox(height: 16),
-                                    //self runner
                                     Container(
                                       height: 48,
                                       alignment: Alignment.centerLeft,
