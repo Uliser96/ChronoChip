@@ -244,6 +244,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         Expanded(
                           child: Center(
                             child: Container(
+                              margin: const EdgeInsets.only(top: 50),
                               width: MediaQuery.of(context).size.width * 0.82,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
