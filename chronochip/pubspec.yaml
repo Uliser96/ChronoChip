@@ -55,6 +55,7 @@ dependencies:
   webview_flutter: ^4.0.7
   flutter_custom_tabs: ^2.5.0
   app_links: ^7.0.0
+  firebase_core: ^4.4.0
   # permission_handler removed due to Android compile issues; image_picker requests permissions itself
 
 dev_dependencies:
