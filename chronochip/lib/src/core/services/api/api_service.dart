@@ -243,6 +243,7 @@ class ApiService {
     required int stateId,
     required String city,
     required String emergencyPhone,
+    required bool isSelfRegistration,
   }) async {
     try {
       final payload = {
@@ -254,6 +255,7 @@ class ApiService {
         'teamName': teamName,
         'eventCategoryId': eventCategoryId,
         'eventTshirtSizeId': eventTshirtSizeId,
+        'isSelfRegistration': isSelfRegistration,
         'email': email,
         'phone': phone,
         'stateId': stateId,
