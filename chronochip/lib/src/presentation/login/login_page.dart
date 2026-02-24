@@ -7,6 +7,7 @@ import 'bloc/login_bloc.dart';
 import 'package:chronochip/src/core/services/api/api_service.dart';
 import 'package:chronochip/src/core/services/api/api_exception.dart';
 import 'package:chronochip/src/presentation/code_validation/code_validation_page.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,6 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   String? _emailError;
   String? _passwordError;
   bool _obscurePassword = true;
+  String _fcmToken = '';
 
   @override
   void initState() {
@@ -31,6 +33,17 @@ class _LoginPageState extends State<LoginPage> {
     // Validar en tiempo real
     _emailController.addListener(_validateEmail);
     _passwordController.addListener(_validatePassword);
+
+    _fcmToken = '';
+    _initFCM();
+  }
+
+  Future<void> _initFCM() async {
+    final token = await getFCMToken();
+    if (!mounted) return;
+    setState(() {
+      _fcmToken = token;
+    });
   }
 
   void _validateEmail() {
@@ -65,6 +78,24 @@ class _LoginPageState extends State<LoginPage> {
         password: _passwordController.text,
       ),
     );
+  }
+
+  Future<String> getFCMToken() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional) {
+      String? token = await messaging.getToken();
+      print("Tu FCM Token es: $token");
+      return token ?? '';
+    } else {
+      print('El usuario rechazó los permisos de notificación');
+      return '';
+    }
   }
 
   @override
